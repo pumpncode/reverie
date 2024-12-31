@@ -192,7 +192,7 @@ return {
                 name = "Fool Metal Alchemist",
                 text = {
                     "During this shop,",
-                    "{C:attention}+#1#{} consumable slot and",
+                    "{C:attention}+#1#{} consumable slots and",
                     "only {C:alchemical}Alchemical{} cards appear",
                     "{s:0.8}Rerolls {s:0.8,C:attention}Booster Packs"
                 }
