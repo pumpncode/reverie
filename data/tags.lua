@@ -35,6 +35,23 @@ local function apply_stamp(self, tag, context)
         G.CONTROLLER.locks[lock] = true
 
         tag:yep("+", G.C.SECONDARY_SET.Tag, function()
+            if tag.name == "Mega Stamp Tag" then
+                local random_tag = Tag("tag_double")
+
+                if random_tag.name == "Orbital Tag" then
+                    local poker_hands = {}
+                    for k, v in pairs(G.GAME.hands) do
+                        if v.visible then
+                            table.insert(poker_hands, k)
+                        end
+                    end
+
+                    random_tag.ability.orbital_hand = pseudorandom_element(poker_hands, pseudoseed("mega_stamp_orbital"))
+                end
+
+                add_tag(random_tag)
+            end
+
             local pack_key = "p_dvrprv_tag_jumbo_1"
             local card = Card(G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2, G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2,
                 G.CARD_W * 1.27, G.CARD_H * 1.27, G.P_CARDS.empty, G.P_CENTERS[pack_key], {
@@ -50,23 +67,6 @@ local function apply_stamp(self, tag, context)
                 }
             })
             card:start_materialize()
-
-            if tag.name == "Mega Stamp Tag" then
-                local random_tag = Tag(get_next_tag_key("mega_stamp"))
-
-                if random_tag.name == "Orbital Tag" then
-                    local poker_hands = {}
-                    for k, v in pairs(G.GAME.hands) do
-                        if v.visible then
-                            table.insert(poker_hands, k)
-                        end
-                    end
-
-                    random_tag.ability.orbital_hand = pseudorandom_element(poker_hands, pseudoseed("mega_stamp_orbital"))
-                end
-
-                add_tag(random_tag)
-            end
 
             G.CONTROLLER.locks[lock] = nil
 
