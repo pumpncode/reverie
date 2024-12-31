@@ -152,14 +152,12 @@ Reverie.tags = {
             return {}
         end,
         apply = apply_stamp,
-        dependency = "CardSleeves"
+        dependencies = "CardSleeves"
     }
 }
 
 for _, v in pairs(Reverie.tags) do
     v.atlas = "cine_tags"
 
-    if not v.dependency or Reverie.find_mod(v.dependency) then
-        SMODS.Tag(v)
-    end
+    SMODS.Tag(v)
 end

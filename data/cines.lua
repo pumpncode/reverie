@@ -582,7 +582,7 @@ Reverie.cines = {
             x = 2,
             y = 2
         },
-        dependency = "CodexArcanum"
+        dependencies = "CodexArcanum"
     },
     {
         key = "alchemist_quest",
@@ -599,7 +599,7 @@ Reverie.cines = {
             x = 3,
             y = 2
         },
-        dependency = "CodexArcanum"
+        dependencies = "CodexArcanum"
     },
     {
         key = "every_hue",
@@ -618,7 +618,7 @@ Reverie.cines = {
             x = 4,
             y = 2
         },
-        dependency = "MoreFluff"
+        dependencies = "MoreFluff"
     },
     {
         key = "every_hue_quest",
@@ -635,7 +635,7 @@ Reverie.cines = {
             x = 5,
             y = 2
         },
-        dependency = "MoreFluff"
+        dependencies = "MoreFluff"
     },
     {
         key = "radioactive",
@@ -653,7 +653,7 @@ Reverie.cines = {
             x = 6,
             y = 2
         },
-        dependency = "FusionJokers"
+        dependencies = "FusionJokers"
     },
     {
         key = "radioactive_quest",
@@ -670,7 +670,7 @@ Reverie.cines = {
             x = 7,
             y = 2
         },
-        dependency = "FusionJokers"
+        dependencies = "FusionJokers"
     },
     {
         key = "jovial_m",
@@ -688,7 +688,7 @@ Reverie.cines = {
             x = 8,
             y = 2
         },
-        dependency = "Cryptid"
+        dependencies = "Cryptid"
     },
     {
         key = "jovial_m_quest",
@@ -705,7 +705,7 @@ Reverie.cines = {
             x = 9,
             y = 2
         },
-        dependency = "Cryptid"
+        dependencies = "Cryptid"
     }
 }
 
@@ -719,7 +719,5 @@ for _, v in pairs(Reverie.cines) do
     v.inject = inject
     v.use = not v.reward and Reverie.use_cine or nil
 
-    if not v.dependency or Reverie.find_mod(v.dependency) then
-        SMODS.Consumable(v)
-    end
+    SMODS.Consumable(v)
 end
