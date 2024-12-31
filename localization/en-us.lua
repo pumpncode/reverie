@@ -331,7 +331,7 @@ return {
             b_dvrprv_stamp = {
                 name = "Stamp Deck",
                 text = {
-                    "Skipping {C:attention}Blind{} gives",
+                    "Skipping a {C:attention}Blind{} gives",
                     "{C:attention,T:p_dvrprv_tag_jumbo_1}#1#{} instead"
                 }
             }
@@ -355,14 +355,14 @@ return {
             sleeve_dvrprv_stamp = {
                 name = "Stamp Sleeve",
                 text = {
-                    "Skipping {C:attention}Blind{} gives",
+                    "Skipping a {C:attention}Blind{} gives",
                     "{C:attention,T:p_dvrprv_tag_jumbo_1}#1#{} instead"
                 }
             },
             sleeve_dvrprv_stamp_alt = {
                 name = "Stamp Sleeve",
                 text = {
-                    "Skipping {C:attention}Blind{} also",
+                    "Skipping a {C:attention}Blind{} also",
                     "gives a {C:attention}random Tag{}"
                 }
             }
