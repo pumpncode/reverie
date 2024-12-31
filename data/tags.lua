@@ -1,9 +1,9 @@
-local function apply_stub(self, _context)
-    if _context.type == "new_blind_choice" then
-        local lock = self.ID
+local function apply_stub(self, tag, context)
+    if context.type == "new_blind_choice" then
+        local lock = tag.ID
         G.CONTROLLER.locks[lock] = true
 
-        self:yep("+", G.C.SECONDARY_SET.Cine, function()
+        tag:yep("+", G.C.SECONDARY_SET.Cine, function()
             local key = "p_dvrprv_film_normal_"..(math.random(1, 2))
             local card = Card(G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2, G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2,
                 G.CARD_W * 1.27, G.CARD_H * 1.27, G.P_CARDS.empty, G.P_CENTERS[key], {
@@ -23,15 +23,18 @@ local function apply_stub(self, _context)
 
             return true
         end)
-        self.triggered = true
+        tag.triggered = true
 
         return true
     end
 end
 
-local function apply_stamp(self, _context)
-    if _context.type == "new_blind_choice" then
-        self:yep("+", G.C.SECONDARY_SET.Tag, function()
+local function apply_stamp(self, tag, context)
+    if context.type == "new_blind_choice" then
+        local lock = tag.ID
+        G.CONTROLLER.locks[lock] = true
+
+        tag:yep("+", G.C.SECONDARY_SET.Tag, function()
             local pack_key = "p_dvrprv_tag_jumbo_1"
             local card = Card(G.play.T.x + G.play.T.w / 2 - G.CARD_W * 1.27 / 2, G.play.T.y + G.play.T.h / 2 - G.CARD_H * 1.27 / 2,
                 G.CARD_W * 1.27, G.CARD_H * 1.27, G.P_CARDS.empty, G.P_CENTERS[pack_key], {
@@ -48,10 +51,10 @@ local function apply_stamp(self, _context)
             })
             card:start_materialize()
 
-            if self.name == "Mega Stamp Tag" then
-                local tag = Tag(get_next_tag_key("mega_stamp"))
+            if tag.name == "Mega Stamp Tag" then
+                local random_tag = Tag(get_next_tag_key("mega_stamp"))
 
-                if tag.name == "Orbital Tag" then
+                if random_tag.name == "Orbital Tag" then
                     local poker_hands = {}
                     for k, v in pairs(G.GAME.hands) do
                         if v.visible then
@@ -59,17 +62,17 @@ local function apply_stamp(self, _context)
                         end
                     end
 
-                    tag.ability.orbital_hand = pseudorandom_element(poker_hands, pseudoseed("mega_stamp_orbital"))
+                    random_tag.ability.orbital_hand = pseudorandom_element(poker_hands, pseudoseed("mega_stamp_orbital"))
                 end
 
-                add_tag(tag)
+                add_tag(random_tag)
             end
 
-            G.CONTROLLER.locks[self.ID] = nil
+            G.CONTROLLER.locks[lock] = nil
 
             return true
         end)
-        self.triggered = true
+        tag.triggered = true
 
         return true
     end
