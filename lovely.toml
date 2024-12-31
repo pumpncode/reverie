@@ -130,6 +130,21 @@ if c1.ability.set == "Tag" then
 end'''
 match_indent = true
 
+# Ensures that the second tag created by a Double Tag triggers because if the Mega Stamp Tag
+# generates a Double Tag as its random tag and any immediate tag as its pack tag then the immediate
+# tag gets duplicated but the second copy will only trigger after clearing a blind
+[[patches]]
+[patches.pattern]
+target = "tag.lua"
+pattern = '''add_tag(Tag(_context.tag.key))'''
+position = "after"
+payload = '''
+for _, v in ipairs(G.GAME.tags) do
+        v:apply_to_run({type = "immediate"})
+end
+'''
+match_indent = true
+
 # When Tags are purchased, properly add them to the game and remove from the shop
 # Applying immediate tags is handled in injected update_shop()
 [[patches]]
