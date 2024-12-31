@@ -249,7 +249,7 @@ Reverie.boosters = {
         order = 10,
         name = "Mega Film Pack",
         config = {
-            extra = 2,
+            extra = 6,
             choose = 1
         },
         weight = 0.07,
