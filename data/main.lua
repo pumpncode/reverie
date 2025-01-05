@@ -245,6 +245,7 @@ function Reverie.create_tag_as_card(area, big, excludes)
     end
 
     local center = G.P_TAGS[key]
+    center.atlas = "tags"
     local size = big and 1.2 or 0.8
 
     local card = Card(area.T.x + area.T.w/2, area.T.y, size, size, nil, center, {

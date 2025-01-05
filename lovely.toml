@@ -86,18 +86,6 @@ elseif _type == "Cine" then _pool[#_pool + 1] = "c_dvrprv_gem_heist"
 elseif _type == "Cine_Quest" then _pool[#_pool + 1] = "c_dvrprv_gem_heist_quest"'''
 match_indent = true
 
-# Make the card uses Tags' sprite atlas
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = '''self.children.center = Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS[_center.set], self.config.center.pos)'''
-position = "after"
-payload = '''
-elseif _center.set == "Tag" then
-    self.children.center = Sprite(self.T.x, self.T.y, self.T.w, self.T.h, G.ASSET_ATLAS[_center.atlas or "tags"], self.config.center.pos)
-'''
-match_indent = true
-
 # Disable buy space check for Tags
 [[patches]]
 [patches.pattern]
