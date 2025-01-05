@@ -1217,22 +1217,22 @@ function Reverie.use_cine(center, card, area, copier)
     }))
 end
 
-local card_open_ref = Card.open
+Card.card_open_reverie_ref = Card.open
 function Card:open()
     if self.ability.set == "Booster" and G.shop and G.booster_pack_meteors then
         G.booster_pack_meteors:fade(0)
     end
 
-    card_open_ref(self)
+    self:card_open_reverie_ref()
 
     if Reverie.booster_excludes then
         Reverie.booster_excludes = nil
     end
 end
 
-local card_explode_ref = Card.explode
+Card.card_explode_reverie_ref = Card.explode
 function Card:explode(dissolve_colours, explode_time_fac)
-    card_explode_ref(self, dissolve_colours, explode_time_fac)
+    self:card_explode_reverie_ref(dissolve_colours, explode_time_fac)
 
     if G.cine_quests and self.ability.set == "Booster" then
         G.E_MANAGER:add_event(Event({
@@ -1250,18 +1250,18 @@ function Card:explode(dissolve_colours, explode_time_fac)
     end
 end
 
-local tag_apply_to_run_ref = Tag.apply_to_run
+Tag.tag_apply_to_run_reverie_ref = Tag.apply_to_run
 function Tag:apply_to_run(_context)
     if G.GAME.current_round.used_cine and _context.type == "new_blind_choice" then
         return
     end
 
-    return tag_apply_to_run_ref(self, _context)
+    return self:tag_apply_to_run_reverie_ref(_context)
 end
 
-local update_shop_ref = Game.update_shop
+Game.update_shop_reverie_ref = Game.update_shop
 function Game:update_shop(dt)
-    update_shop_ref(self, dt)
+    self:update_shop_reverie_ref(dt)
 
     if G.STATE_COMPLETE then
         for _, v in ipairs(G.GAME.tags) do
@@ -1319,13 +1319,13 @@ function G.FUNCS.toggle_shop(e)
     }))
 end
 
-local check_use_ref = Card.check_use
+Card.check_use_reverie_ref = Card.check_use
 function Card:check_use()
     if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.name == "Pack" then
         return nil
     end
 
-    return check_use_ref(self)
+    return self:check_use_reverie_ref()
 end
 
 function G.FUNCS.can_select_crazy_card(e)
@@ -1413,9 +1413,9 @@ function G.UIDEF.card_focus_ui(card)
     return base_background
 end
 
-local is_node_focusable_ref = Controller.is_node_focusable
+Controller.is_node_focusable_reverie_ref = Controller.is_node_focusable
 function Controller:is_node_focusable(node)
-    local ret_val = is_node_focusable_ref(self, node)
+    local ret_val = self:is_node_focusable_reverie_ref(node)
 
     if node:is(Card) and Reverie.find_used_cine("Adrifting") and node.facing == "back" then
         ret_val = true
@@ -1446,7 +1446,7 @@ function G.FUNCS.sell_card(e)
     end
 end
 
-local set_ability_ref = Card.set_ability
+Card.set_ability_reverie_ref = Card.set_ability
 function Card:set_ability(center, initial, delay_sprites)
     local before_enhancements, after_enhancements = 0, 0
 
@@ -1458,7 +1458,7 @@ function Card:set_ability(center, initial, delay_sprites)
         end
     end
 
-    set_ability_ref(self, center, initial, delay_sprites)
+    self:set_ability_reverie_ref(center, initial, delay_sprites)
 
     if self.ability.set == "Cine" and self.config.center.reward then
         self.ability.progress = 0
@@ -1492,7 +1492,7 @@ function Card:set_ability(center, initial, delay_sprites)
     end
 end
 
-local calculate_joker_ref = Card.calculate_joker
+Card.calculate_joker_reverie_ref = Card.calculate_joker
 function Card:calculate_joker(context)
     if self.debuff then
         return nil
@@ -1568,7 +1568,7 @@ function Card:calculate_joker(context)
         end
     end
 
-    local result = calculate_joker_ref(self, context)
+    local result = self:calculate_joker_reverie_ref(context)
 
     if self.ability.set == "Joker" and self.ability.morseled then
         if self.config.center.key == "j_kcva_swiss" and context.after and not context.blueprint then
@@ -1668,9 +1668,9 @@ function Reverie.complete_cine_quest(card)
     }))
 end
 
-local tag_init_ref = Tag.init
+Tag.tag_init_reverie_ref = Tag.init
 function Tag:init(_tag, for_collection, _blind_type)
-    tag_init_ref(self, _tag, for_collection, _blind_type)
+    self:tag_init_reverie_ref(_tag, for_collection, _blind_type)
 
     local proto = G.P_TAGS[_tag] or G.tag_undiscovered
     if proto.atlas then
@@ -1678,19 +1678,19 @@ function Tag:init(_tag, for_collection, _blind_type)
     end
 end
 
-local tag_load_ref = Tag.load
+Tag.tag_load_reverie_ref = Tag.load
 function Tag:load(tag_savetable)
     local proto = G.P_TAGS[tag_savetable.key] or G.tag_undiscovered
     if proto.atlas then
         self.atlas = proto.atlas
     end
 
-    tag_load_ref(self, tag_savetable)
+    self:tag_load_reverie_ref(tag_savetable)
 end
 
-local card_highlight_ref = Card.highlight
+Card.card_highlight_reverie_ref = Card.highlight
 function Card:highlight(is_higlighted)
-    card_highlight_ref(self, is_higlighted)
+    self:card_highlight_reverie_ref(is_higlighted)
 
     if Reverie.is_cine_or_reverie(self) or (self.area and self.area == G.pack_cards) then
         if self.highlighted and self.area and self.area.config.type ~= 'shop' then
@@ -1773,9 +1773,9 @@ function end_round()
     end
 end
 
-local add_to_deck_ref = Card.add_to_deck
+Card.add_to_deck_reverie_ref = Card.add_to_deck
 function Card:add_to_deck(from_debuff)
-    add_to_deck_ref(self, from_debuff)
+    self:add_to_deck_reverie_ref(from_debuff)
 
     if G.cine_quests and self.ability.set == "Joker" then
         for _, v in ipairs(G.cine_quests.cards) do
@@ -1787,14 +1787,14 @@ function Card:add_to_deck(from_debuff)
     end
 end
 
-local card_sell_card_ref = Card.sell_card
+Card.card_sell_card_reverie_ref = Card.sell_card
 function Card:sell_card()
     self.ability.not_destroyed = true
 
-    card_sell_card_ref(self)
+    self:card_sell_card_reverie_ref()
 end
 
-local card_remove_ref = Card.remove
+Card.card_remove_reverie_ref = Card.remove
 function Card:remove()
     local destroyed = (self.added_to_deck and not self.ability.not_destroyed) or (G.playing_cards and self.playing_card)
     local on_game_area = nil
@@ -1806,7 +1806,7 @@ function Card:remove()
         end
     end
 
-    card_remove_ref(self)
+    self:card_remove_reverie_ref()
 
     if G.cine_quests and destroyed and on_game_area then
         for _, v in ipairs(G.cine_quests.cards) do
@@ -1870,13 +1870,13 @@ function Reverie.set_card_back(card)
     end
 end
 
-local card_load_ref = Card.load
+Card.card_load_reverie_ref = Card.load
 function Card:load(cardTable, other_card)
     if cardTable.label == "Tag" then
         G.P_CENTERS[cardTable.save_fields.center] = G.P_TAGS[cardTable.save_fields.center]
     end
 
-    card_load_ref(self, cardTable, other_card)
+    self:card_load_reverie_ref(cardTable, other_card)
 
     if cardTable.label == "Tag" then
         G.P_CENTERS[cardTable.save_fields.center] = nil
