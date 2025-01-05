@@ -265,7 +265,7 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
-pattern = '''if card.area then card.area:remove_card(card) end'''
+pattern = '''if card:check_use() then '''
 position = "before"
 payload = '''
 local is_pack_card = card.area and card.area == G.pack_cards'''
@@ -274,8 +274,8 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
-pattern = '''if card.ability.consumeable then'''
-position = "after"
+pattern = '''if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED then'''
+position = "before"
 payload = '''
 local is_cine = Reverie.is_cine_or_reverie(card)
 if is_pack_card and (Reverie.is_in_reverie_pack() or is_cine) then
