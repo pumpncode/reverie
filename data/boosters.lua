@@ -273,3 +273,51 @@ for _, v in pairs(Reverie.boosters) do
 
     SMODS.Booster(v)
 end
+
+SMODS.Booster:take_ownership_by_kind('Standard', {
+    group_key = "k_standard_pack",
+    update_pack = SMODS.Booster.update_pack,
+    ease_background_colour = function(self) ease_background_colour_blind(G.STATES.STANDARD_PACK) end,
+    create_UIBox = function(self) return create_UIBox_standard_pack() end,
+    particles = function(self)
+        G.booster_pack_sparkles = Particles(1, 1, 0,0, {
+            timer = 0.015,
+            scale = 0.3,
+            initialize = true,
+            lifespan = 3,
+            speed = 0.2,
+            padding = -1,
+            attach = G.ROOM_ATTACH,
+            colours = {G.C.BLACK, G.C.RED},
+            fill = true
+        })
+        G.booster_pack_sparkles.fade_alpha = 1
+        G.booster_pack_sparkles:fade(1, 0)
+    end,
+    create_card = function(self, card, i)
+        if Reverie.find_used_cine("Poker Face") then
+            card = Reverie.create_poker_face_card(G.pack_cards)
+            return card
+        else
+            local _edition = poll_edition('standard_edition'..G.GAME.round_resets.ante, 2, true)
+            local _seal = SMODS.poll_seal({mod = 10})
+            return {set = (pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base", edition = _edition, seal = _seal, area = G.pack_cards, skip_materialize = true, soulable = true, key_append = "sta"}
+        end
+    end,
+    loc_vars = pack_loc_vars,
+})
+
+SMODS.Booster:take_ownership_by_kind('Buffoon', {
+    group_key = "k_buffoon_pack",
+    update_pack = SMODS.Booster.update_pack,
+    ease_background_colour = function(self) ease_background_colour_blind(G.STATES.BUFFOON_PACK) end,
+    create_UIBox = function(self) return create_UIBox_buffoon_pack() end,
+    create_card = function(self, card)
+        special_reverie_joker = Reverie.create_special_joker(G.pack_cards)
+        if special_reverie_joker then
+            return special_reverie_joker
+        end
+        return {set = "Joker", area = G.pack_cards, skip_materialize = true, soulable = true, key_append = "buf"}
+    end,
+    loc_vars = pack_loc_vars,
+})

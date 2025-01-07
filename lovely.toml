@@ -149,44 +149,6 @@ elseif c1.ability.set == "Tag" then
 match_indent = true
 
 [[patches]]
-[patches.regex]
-target = "card.lua"
-pattern = '''(?<indent>\s{20})elseif self.ability.name:find.'Buffoon'. then(\n.*?)*?\n\s{20}end'''
-position = "after"
-line_prepend = "$indent"
-payload = '''
-
-::reverie_skip_create_card::
-'''
-
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = '''card = create_card((pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6)*'''
-position = "before"
-payload = '''
-if Reverie.find_used_cine("Poker Face") then
-    card = Reverie.create_poker_face_card(G.pack_cards)
-    goto reverie_skip_create_card
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = '''card = create_card("Joker", G.pack_cards, nil, nil, true, true, nil, 'buf')'''
-position = "before"
-payload = '''
-card = Reverie.create_special_joker(G.pack_cards)
-
-if card then
-    goto reverie_skip_create_card
-end
-'''
-match_indent = true
-
-[[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
 pattern = '''e.config.ref_table:redeem()'''
