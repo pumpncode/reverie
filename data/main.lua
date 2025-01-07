@@ -410,11 +410,9 @@ function Reverie.create_special_joker(area)
         if type == "Morsel" then
             local available = Reverie.get_food_jokers()
 
-            if not next(find_joker("Showman")) then
-                for i, v in ipairs(available) do
-                    if next(find_joker(G.P_CENTERS[v].name)) then
-                        available[i] = nil
-                    end
+            for i, key in ipairs(available) do
+                if (G.GAME.used_jokers[key] and not next(find_joker("Showman"))) then
+                    available[i] = nil
                 end
             end
 
@@ -423,10 +421,12 @@ function Reverie.create_special_joker(area)
             end
 
             local target = pseudorandom_element(available, pseudoseed("mor"))
-            card = create_card("Joker", area, nil, nil, nil, nil, target, "sel")
+            card = {set = "Joker", area = area, key = target, key_append = "sel"}
+            -- card = create_card("Joker", area, nil, nil, nil, nil, target, "sel")
         elseif type == "I Sing, I've No Shape" then
             local force = pseudorandom_element(G.jokers.cards, pseudoseed("ising"))
-            card = create_card("Joker", area, nil, nil, nil, nil, force.config.center.key, "iveno")
+            card = {set = "Joker", area = area, key = force.config.center.key, key_append = "iveno"}
+            -- card = create_card("Joker", area, nil, nil, nil, nil, force.config.center.key, "iveno")
         elseif type == "Radioactive" then
             local available = Reverie.get_fusion_materials()
             local fallback = pseudorandom_element(available, pseudoseed("radio_fallback"))
@@ -444,16 +444,22 @@ function Reverie.create_special_joker(area)
             end
 
             local target = pseudorandom_element(available, pseudoseed("radio"))
-            card = create_card("Joker", area, nil, nil, nil, nil, target, "active")
+            card = {set = "Joker", area = area, key = target, key_append = "active"}
+            -- card = create_card("Joker", area, nil, nil, nil, nil, target, "active")
         elseif type == "Jovial M" then
-            card = create_card("Joker", area, nil, pseudorandom_element({
+            local rarity = pseudorandom_element({
                 "cry_epic",
                 "cry_exotic"
-            }, pseudoseed("jovial_rarity")), nil, nil, nil, "jovial")
+            }, pseudoseed("jovial_rarity"))
+            card = {set = "Joker", area = area, rarity = rarity, key_append = "jovial"}
+            -- card = create_card("Joker", area, nil, pseudorandom_element({
+            --     "cry_epic",
+            --     "cry_exotic"
+            -- }, pseudoseed("jovial_rarity")), nil, nil, nil, "jovial")
         end
     end
 
-    return card
+    return SMODS.create_card(card)
 end
 
 function Reverie.create_poker_face_card(area)
@@ -1364,7 +1370,7 @@ local use_and_sell_buttons_ref = G.UIDEF.use_and_sell_buttons
 function G.UIDEF.use_and_sell_buttons(card)
     local result = use_and_sell_buttons_ref(card)
 
-    if (Reverie.find_used_cine("Crazy Lucky") or Reverie.is_cine_or_reverie(card)) and card.ability.consumeable and card.area and card.area == G.pack_cards then
+    if (Reverie.is_cine_or_reverie(card) or Reverie.find_used_cine("Crazy Lucky")) and card.ability.consumeable and card.area and card.area == G.pack_cards then
         return {
             n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
                 {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_select_crazy_card'}, nodes={
