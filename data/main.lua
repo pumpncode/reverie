@@ -562,6 +562,12 @@ function Reverie.morselize_UI(card)
                 set = "Tag",
                 key = "tag_negative"
             }}
+        elseif card.config.center.key == "j_diet_cola" then
+            loc_vars = {localize{
+                type = "name_text",
+                set = "Tag",
+                key = "tag_double"
+            }}
         end
 
         localize{

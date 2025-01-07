@@ -257,7 +257,8 @@ return {
             j_diet_cola_morsel_alternative = {
                 text = {
                     ".", -- Blank strings are ignored, so putting random character to preserve index info
-                    "create two free"
+                    "create two free",
+                    "{C:attention}#1#s",
                 }
             },
             j_olab_fine_wine_morsel_alternative = {
@@ -395,8 +396,8 @@ return {
             c_dvrprv_reverie = {
                 name = "Reverie",
                 text = {
-                    "Applies every",
-                    "{C:cine,E:1}Cine cards",
+                    "Applies {C:legendary,E:1}every{}",
+                    "{C:legendary,E:1}Cine card{}",
                     "to this shop"
                 }
             }
