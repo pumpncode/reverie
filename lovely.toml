@@ -66,12 +66,10 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "tag.lua"
-pattern = '''tag_sprite.ability_UIBox_table = generate_card_ui(G.P_TAGS[self.key], nil, loc_vars, (self.hide_ability) and 'Undiscovered' or 'Tag', nil, (self.hide_ability))'''
-position = "before"
+pattern = '''elseif name_to_check == 'Skip Tag' then*'''
+position = "at"
 payload = '''
-if self.ability.as_card and name_to_check == "Skip Tag" then
-    loc_vars[2] = self.config.skip_bonus * (G.GAME.skips or 0)
-end
+elseif name_to_check == 'Skip Tag' then loc_vars = {self.config.skip_bonus, self.config.skip_bonus*((G.GAME.skips or 0)+(self.ability.as_card and 0 or 1))}
 '''
 match_indent = true
 
@@ -262,7 +260,7 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
-pattern = '''if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED then'''
+pattern = '''if G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED*'''
 position = "before"
 payload = '''
 local is_cine = Reverie.is_cine_or_reverie(card)
@@ -355,12 +353,13 @@ if Reverie.is_cine_or_reverie(self) then
 end
 '''
 
+# Card:remove_from_deck() and Card:remove()
 [[patches]]
-[patches.regex]
+[patches.pattern]
 target = "card.lua"
-pattern = '''Card:remove_from_deck\(from_debuff.*(\n.*?)*(?<indent>[\t ]*)G.jokers.config.card_limit = G.jokers.config.card_limit - 1'''
+pattern = '''G.jokers.config.card_limit = G.jokers.config.card_limit - self.edition.card_limit'''
 position = "after"
-line_prepend = "$indent"
+match_indent = true
 payload = '''
 
 if Reverie.is_cine_or_reverie(self) then
@@ -368,20 +367,7 @@ if Reverie.is_cine_or_reverie(self) then
     G.cine_quests.config.card_limit = G.cine_quests.config.card_limit - self.edition.card_limit
 end
 '''
-
-[[patches]]
-[patches.regex]
-target = "card.lua"
-pattern = '''Card:remove\(\).*(\n.*?)*(?<indent>[\t ]*)G.jokers.config.card_limit = G.jokers.config.card_limit - 1'''
-position = "after"
-line_prepend = "$indent"
-payload = '''
-
-if Reverie.is_cine_or_reverie(self) then
-    G.consumeables.config.card_limit = G.consumeables.config.card_limit + self.edition.card_limit
-    G.cine_quests.config.card_limit = G.cine_quests.config.card_limit - self.edition.card_limit
-end
-'''
+times = 2
 
 [[patches]]
 [patches.regex]
@@ -403,18 +389,6 @@ if G.GAME.current_round.used_cine then
 end
 
 '''
-
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''if v.name == 'Black Hole' or v.name == 'The Soul' then'''
-position = "before"
-payload = '''
-if v.set == "Spectral" and v.name == "Reverie" then
-    add = false
-end
-'''
-match_indent = true
 
 [[patches]]
 [patches.pattern]
