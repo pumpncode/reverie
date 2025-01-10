@@ -1978,7 +1978,12 @@ function G.FUNCS.check_for_buy_space(card)
 end
 
 function Reverie.find_mod(id)
-    return (SMODS.Mods[id] or {}).can_load
+    for _, mod in ipairs(SMODS.find_mod(id)) do
+        if mod.can_load then
+            return true
+        end
+    end
+    return false
 end
 
 if Reverie.find_mod("cartomancer") and Cartomancer then
