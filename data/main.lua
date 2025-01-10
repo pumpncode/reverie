@@ -499,8 +499,6 @@ function Reverie.get_food_jokers()
         "j_cry_caramel",
         "j_cry_foodm",
         "j_cry_crustulum",
-        "j_bunc_fondue",
-        "j_bunc_starfruit",
         "j_evo_full_sugar_cola",
         "j_kcva_fortunecookie",
         "j_kcva_swiss",
@@ -512,11 +510,23 @@ function Reverie.get_food_jokers()
         "j_pape_soft_taco",
         "j_pape_crispy_taco",
         "j_pape_nachos",
+        "j_pape_complete_breakfast",
         "j_pape_ghost_cola",
+        "j_pape_joker_cookie",
+        "j_pape_cakepop",
+        "j_pape_caramel_apple",
+        "j_pape_charred_marshmallow",
+        "j_pape_dreamsicle",
         "j_twewy_candleService",
         "j_twewy_burningCherry",
         "j_twewy_burningMelon"
     }
+
+    -- Bunco exotic suit jokers
+    if G.GAME and G.GAME.Exotic then
+        table.insert(foods, "j_bunc_starfruit")
+        table.insert(foods, "j_bunc_fondue")
+    end
 
     for _, v in pairs(foods) do
         if G.P_CENTERS[v] then
