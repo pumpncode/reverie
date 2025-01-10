@@ -459,7 +459,10 @@ function Reverie.create_special_joker(area)
         end
     end
 
-    return SMODS.create_card(card)
+    if card then
+        card = SMODS.create_card(card)
+    end
+    return card
 end
 
 function Reverie.create_poker_face_card(area)
