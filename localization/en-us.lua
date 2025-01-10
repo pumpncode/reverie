@@ -408,8 +408,8 @@ return {
                 text = {
                     "{C:attention}+#1#{} card slot",
                     "available in shop",
-                    "while {C:cine}Cine{} card is",
-                    "active"
+                    "while a {C:cine}Cine{} card",
+                    "is active"
                 }
             },
             v_dvrprv_megaphone = {
@@ -486,7 +486,7 @@ return {
                 name = "Mega Film Pack",
                 text = {
                     "Choose {C:attention}#1#{} of up to",
-                    "{C:attention}#2# {C:cine}Cine{} cards to add",
+                    "{C:attention}#2# {E:1,C:cine}Cine{} cards to add",
                     "to your possession"
                 }
             },
