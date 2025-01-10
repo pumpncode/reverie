@@ -826,33 +826,33 @@ function Reverie.create_card_for_cine_shop(area)
     local polled_rate = pseudorandom(pseudoseed("cdt" .. G.GAME.round_resets.ante)) * total_rate
     local check_rate = 0
 
-    sendDebugMessage("Joker Available: "..tostring(joker_available).." ("..(joker_available and G.GAME.joker_rate or 0)..")", "ReverieDebugLogger")
-    sendDebugMessage("Planet or Tarot Available: "..tostring(planet_or_tarot_available).." ("..(planet_or_tarot_available and G.GAME.tarot_rate + G.GAME.planet_rate or 0)..")", "ReverieDebugLogger")
-    sendDebugMessage("Playing Available: "..tostring(playing_available).." ("..(playing_available and playing_card_rate or 0)..")", "ReverieDebugLogger")
-    sendDebugMessage("Spectral Available: "..tostring(spectral_available).." ("..(spectral_available and spectral_rate or 0)..")", "ReverieDebugLogger")
-    sendDebugMessage("Tag Available: "..tostring(tag_available).." ("..(tag_available and G.GAME.joker_rate or 0)..")", "ReverieDebugLogger")
-    sendDebugMessage("Crazy Pack Available: "..tostring(crazy_pack_available).." ("..(crazy_pack_available and G.GAME.joker_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Joker Available: "..tostring(joker_available).." ("..(joker_available and G.GAME.joker_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Planet or Tarot Available: "..tostring(planet_or_tarot_available).." ("..(planet_or_tarot_available and G.GAME.tarot_rate + G.GAME.planet_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Playing Available: "..tostring(playing_available).." ("..(playing_available and playing_card_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Spectral Available: "..tostring(spectral_available).." ("..(spectral_available and spectral_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Tag Available: "..tostring(tag_available).." ("..(tag_available and G.GAME.joker_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Crazy Pack Available: "..tostring(crazy_pack_available).." ("..(crazy_pack_available and G.GAME.joker_rate or 0)..")", "ReverieDebugLogger")
 
-    if has_oddity then
-        sendDebugMessage("Oddity Available: "..tostring(oddity_available).." ("..(oddity_available and oddity_rate or 0)..")", "ReverieDebugLogger")
-    end
+    -- if has_oddity then
+    --     sendDebugMessage("Oddity Available: "..tostring(oddity_available).." ("..(oddity_available and oddity_rate or 0)..")", "ReverieDebugLogger")
+    -- end
 
-    if has_alchemical then
-        sendDebugMessage("Alchemical Available: "..tostring(alchemical_available).." ("..(alchemical_available and alchemical_rate or 0)..")", "ReverieDebugLogger")
-    end
+    -- if has_alchemical then
+    --     sendDebugMessage("Alchemical Available: "..tostring(alchemical_available).." ("..(alchemical_available and alchemical_rate or 0)..")", "ReverieDebugLogger")
+    -- end
 
-    if has_colour then
-        sendDebugMessage("Colour Available: "..tostring(colour_available).." ("..(colour_available and colour_rate or 0)..")", "ReverieDebugLogger")
-    end
+    -- if has_colour then
+    --     sendDebugMessage("Colour Available: "..tostring(colour_available).." ("..(colour_available and colour_rate or 0)..")", "ReverieDebugLogger")
+    -- end
 
-    sendDebugMessage("Total Rate: "..total_rate..", Polled Rate: "..polled_rate, "ReverieDebugLogger")
+    -- sendDebugMessage("Total Rate: "..total_rate..", Polled Rate: "..polled_rate, "ReverieDebugLogger")
 
     for _, v in ipairs(candidates) do
-        sendDebugMessage("Checking: "..v.type..", Available: "..tostring(v.available)..", Polled Rate("..polled_rate..
-            ") <= Check Rate("..check_rate..") + Val("..v.val..") = ("..check_rate + v.val..")", "ReverieDebugLogger")
+        -- sendDebugMessage("Checking: "..v.type..", Available: "..tostring(v.available)..", Polled Rate("..polled_rate..
+        --     ") <= Check Rate("..check_rate..") + Val("..v.val..") = ("..check_rate + v.val..")", "ReverieDebugLogger")
 
         if v.available and polled_rate > check_rate and polled_rate <= check_rate + v.val then
-            sendDebugMessage(v.type.." selected", "ReverieDebugLogger")
+            -- sendDebugMessage(v.type.." selected", "ReverieDebugLogger")
 
             local card = nil
 
