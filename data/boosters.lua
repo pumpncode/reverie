@@ -75,6 +75,35 @@ end
 
 Reverie.boosters = {
     {
+        key = "crazy_lucky_1",
+        group_key = "k_dvrprv_crazy_pack",
+        order = 6,
+        name = "Pack",
+        config = {
+            extra = 4,
+            choose = 1,
+            weights = {
+                ["Joker"] = 1,
+                ["Consumeables"] = 0.75,
+                ["Playing"] = 1,
+                ["Tag"] = 0.15,
+                ["Voucher"] = 0.05,
+                ["Cine"] = 0.01
+            }
+        },
+        weight = 1,
+        kind = "Crazy",
+        cost = 6,
+        yes_pool_flag = "Crazy Lucky",
+        pos = {
+            x = 4,
+            y = 0
+        },
+        create_card = create_crazy_pack_card,
+        ease_background_colour = ease_crazy_pack_colour,
+        sparkles = crazy_pack_sparkles
+    },
+    {
         key = "tag_normal_1",
         group_key = "k_dvrprv_tag_pack",
         order = 1,
@@ -153,35 +182,6 @@ Reverie.boosters = {
         },
         create_card = create_tag_pack_card,
         ease_background_colour = ease_tag_pack_colour
-    },
-    {
-        key = "crazy_lucky_1",
-        group_key = "k_dvrprv_crazy_pack",
-        order = 6,
-        name = "Pack",
-        config = {
-            extra = 4,
-            choose = 1,
-            weights = {
-                ["Joker"] = 1,
-                ["Consumeables"] = 0.75,
-                ["Playing"] = 1,
-                ["Tag"] = 0.15,
-                ["Voucher"] = 0.05,
-                ["Cine"] = 0.01
-            }
-        },
-        weight = 1,
-        kind = "Crazy",
-        cost = 6,
-        yes_pool_flag = "Crazy Lucky",
-        pos = {
-            x = 4,
-            y = 0
-        },
-        create_card = create_crazy_pack_card,
-        ease_background_colour = ease_crazy_pack_colour,
-        sparkles = crazy_pack_sparkles
     },
     {
         key = "film_normal_1",
