@@ -36,7 +36,7 @@ local function apply_stamp(self, tag, context)
 
         tag:yep("+", G.C.SECONDARY_SET.Tag, function()
             if tag.name == "Mega Stamp Tag" then
-                local random_tag = Tag("tag_double")
+                local random_tag = Tag(get_next_tag_key("mega_stamp"))
 
                 if random_tag.name == "Orbital Tag" then
                     local poker_hands = {}
