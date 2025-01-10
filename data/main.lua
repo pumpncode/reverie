@@ -1628,9 +1628,9 @@ function Reverie.progress_cine_quest(card)
         })
     end
 
-    if card.ability.progress >= card.ability.extra.goal then
+    if card.ability.progress == card.ability.extra.goal then
         Reverie.complete_cine_quest(card)
-    else
+    elseif card.ability.progress < card.ability.extra.goal then
         card_eval_status_text(card, "extra", nil, nil, nil, {
             message = card.ability.progress.."/"..card.ability.extra.goal,
             colour = G.C.SECONDARY_SET.Cine
@@ -1660,6 +1660,7 @@ function Reverie.complete_cine_quest(card)
                 func = function()
                     G.GAME.used_jokers[card.config.center_key] = nil
                     card.config.card = {}
+                    if not G.P_CENTERS[card.config.center.reward] then return true end -- Failsafe
                     card:set_ability(G.P_CENTERS[card.config.center.reward], true)
 
                     if not card.config.center.discovered then
