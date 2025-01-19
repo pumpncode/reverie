@@ -173,59 +173,63 @@ SMODS.ConsumableType{
 }
 
 local function can_use(self, card)
-    if card.config.center.reward then
+    if card.reward then
         return false
     else
         return G.STATE == G.STATES.SHOP and G.shop
     end
 end
 
-local function loc_vars(self, info_queue, center)
+local function loc_vars_cine(self, info_queue, center)
     local vars = nil
 
-    if center and center.config.center.reward and center.ability.progress then
-        info_queue[#info_queue + 1] = G.P_CENTERS[center.config.center.reward]
+    if self.name == "Tag or Die" then
+        vars = {Reverie.get_var_object(center, self).extra.cost}
+    elseif self.name == "The Unseen" or self.name == "Eerie Inn" then
+        vars = {Reverie.get_var_object(center, self).extra.mult}
+    elseif self.name == "I Sing, I've No Shape" then
+        vars = {Reverie.get_var_object(center, self).extra.add}
+    elseif self.name == "Crazy Lucky" then
+        local info = G.P_CENTERS.p_dvrprv_crazy_lucky_1:loc_vars(info_queue)
 
-        if center.config.center.reward == "c_dvrprv_unseen" then
-            vars = {center.ability.extra.slots, center.ability.extra.goal, center.ability.progress}
-        elseif center.config.center.reward == "c_dvrprv_ive_no_shape" then
-            vars = {center.ability.extra.chips, center.ability.extra.goal, center.ability.progress}
-        elseif center.config.center.reward == "c_dvrprv_jovial_m" then
-            info_queue[#info_queue + 1] = {
-                key = "j_jolly",
-                set = "Joker",
-                specific_vars = {G.P_CENTERS.j_jolly.config.t_mult, G.P_CENTERS.j_jolly.config.type}
-            }
-            vars = {center.ability.extra.goal, center.ability.progress, localize{
-                type = "name_text",
-                set = "Joker",
-                key = "j_jolly"
-            }}
-        else
-            vars = {center.ability.extra.goal, center.ability.progress}
-        end
+        info_queue[#info_queue + 1] = {
+            key = info.key,
+            set = "Other",
+            vars = info.vars
+        }
+    elseif self.name == "Fool Metal Alchemist" then
+        vars = {Reverie.get_var_object(center, self).extra.slot}
+    elseif self.name == "Every Hue" then
+        vars = {Reverie.get_var_object(center, self).extra.rounds}
     else
-        if self.name == "Tag or Die" then
-            vars = {Reverie.get_var_object(center, self).extra.cost}
-        elseif self.name == "The Unseen" or self.name == "Eerie Inn" then
-            vars = {Reverie.get_var_object(center, self).extra.mult}
-        elseif self.name == "I Sing, I've No Shape" then
-            vars = {Reverie.get_var_object(center, self).extra.add}
-        elseif self.name == "Crazy Lucky" then
-            local info = G.P_CENTERS.p_dvrprv_crazy_lucky_1:loc_vars(info_queue)
+        vars = {Reverie.get_var_object(center, self).extra}
+    end
 
-            info_queue[#info_queue + 1] = {
-                key = info.key,
-                set = "Other",
-                vars = info.vars
-            }
-        elseif self.name == "Fool Metal Alchemist" then
-            vars = {Reverie.get_var_object(center, self).extra.slot}
-        elseif self.name == "Every Hue" then
-            vars = {Reverie.get_var_object(center, self).extra.rounds}
-        else
-            vars = {Reverie.get_var_object(center, self).extra}
-        end
+    return {vars = vars}
+end
+
+local function loc_vars_quest(self, info_queue, center)
+    local vars = nil
+
+    info_queue[#info_queue + 1] = G.P_CENTERS[center.reward]
+
+    if center.reward == "c_dvrprv_unseen" then
+        vars = {center.ability.extra.slots, center.ability.extra.goal, center.ability.progress}
+    elseif center.reward == "c_dvrprv_ive_no_shape" then
+        vars = {center.ability.extra.chips, center.ability.extra.goal, center.ability.progress}
+    elseif center.reward == "c_dvrprv_jovial_m" then
+        info_queue[#info_queue + 1] = {
+            key = "j_jolly",
+            set = "Joker",
+            specific_vars = {G.P_CENTERS.j_jolly.config.t_mult, G.P_CENTERS.j_jolly.config.type}
+        }
+        vars = {center.ability.extra.goal, center.ability.progress, localize{
+            type = "name_text",
+            set = "Joker",
+            key = "j_jolly"
+        }}
+    else
+        vars = {center.ability.extra.goal, center.ability.progress}
     end
 
     return {vars = vars}
@@ -715,7 +719,7 @@ for _, v in pairs(Reverie.cines) do
     v.set = "Cine"
     v.atlas = "Cine"
     v.can_use = can_use
-    v.loc_vars = loc_vars
+    v.loc_vars = v.reward and loc_vars_quest or loc_vars_cine
     v.inject = inject
     v.use = not v.reward and Reverie.use_cine or nil
 
