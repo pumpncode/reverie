@@ -391,23 +391,6 @@ match_indent = true
 
 [[patches]]
 [patches.pattern]
-target = "card.lua"
-pattern = '''pack_cards[i] = card'''
-position = "after"
-payload = '''
-
-if self.config.center.key:find(Reverie.prefix) then
-    if not Reverie.booster_excludes then
-        Reverie.booster_excludes = {}
-    end
-
-    table.insert(Reverie.booster_excludes, card.config.center.key)
-end
-'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
 target = "functions/common_events.lua"
 pattern = '''desc_nodes.name = localize{type = 'name_text', key = name_override or _c.key, set = name_override and 'Other' or _c.set}*'''
 position = "after"

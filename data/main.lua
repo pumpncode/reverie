@@ -234,14 +234,25 @@ function Reverie.end_cine_shop()
     Reverie.set_cine_banned_keys()
 end
 
-function Reverie.create_tag_as_card(area, big, excludes)
-    local _pool, _pool_key = get_current_pool("Tag", nil, nil, nil)
+function Reverie.create_tag_as_card(area, big)
+    local _pool, _pool_key = get_current_pool("Tag")
+
+    --cull the pool manually, because Vanilla doesn't do it for tags normally (as it should)
+    for k, v in ipairs(_pool) do
+        if v ~= "UNAVAILABLE" and G.GAME.used_jokers[v] then
+            _pool[k] = "UNAVAILABLE"
+        end
+    end
+
     local key = pseudorandom_element(_pool, pseudoseed(_pool_key))
     local it = 1
 
-    while key == "UNAVAILABLE" or (excludes and get_index(excludes, key)) do
+    while key == "UNAVAILABLE" do
         it = it + 1
         key = pseudorandom_element(_pool, pseudoseed(_pool_key.."_resample"..it))
+        if it > 100 then
+            key = "tag_handy" -- default tag when all tags are used
+        end
     end
 
     local center = G.P_TAGS[key]
@@ -285,7 +296,7 @@ function Reverie.create_booster(area, center)
     return card
 end
 
-function Reverie.create_crazy_random_card(area, excludes)
+function Reverie.create_crazy_random_card(area)
     local cumulative, pointer, target, card = 0, 0, nil, nil
     local tag_or_die = Reverie.find_used_cine("Tag or Die")
     local weights = {}
@@ -377,7 +388,7 @@ function Reverie.create_crazy_random_card(area, excludes)
             end
         end
     elseif target == "Tag" then
-        card = Reverie.create_tag_as_card(area, true, excludes)
+        card = Reverie.create_tag_as_card(area, true)
     end
 
     if not card then
@@ -1250,10 +1261,6 @@ function Card:open()
     end
 
     self:card_open_reverie_ref()
-
-    if Reverie.booster_excludes then
-        Reverie.booster_excludes = nil
-    end
 end
 
 Card.card_explode_reverie_ref = Card.explode
