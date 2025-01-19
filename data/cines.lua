@@ -211,13 +211,15 @@ end
 local function loc_vars_quest(self, info_queue, center)
     local vars = nil
 
-    info_queue[#info_queue + 1] = G.P_CENTERS[center.reward]
+    local reward_card = self.reward
 
-    if center.reward == "c_dvrprv_unseen" then
+    info_queue[#info_queue + 1] = G.P_CENTERS[reward_card]
+
+    if reward_card == "c_dvrprv_unseen" then
         vars = {center.ability.extra.slots, center.ability.extra.goal, center.ability.progress}
-    elseif center.reward == "c_dvrprv_ive_no_shape" then
+    elseif reward_card == "c_dvrprv_ive_no_shape" then
         vars = {center.ability.extra.chips, center.ability.extra.goal, center.ability.progress}
-    elseif center.reward == "c_dvrprv_jovial_m" then
+    elseif reward_card == "c_dvrprv_jovial_m" then
         info_queue[#info_queue + 1] = {
             key = "j_jolly",
             set = "Joker",
