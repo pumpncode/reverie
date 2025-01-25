@@ -3,6 +3,8 @@ version = "1.0.0"
 dump_lua = true
 priority = 0
 
+# add_joker()
+# patch to spawn Cine cards correctly with debug menu and challenges (if that ever happens)
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -15,6 +17,8 @@ end
 '''
 match_indent = true
 
+# add_joker()
+# patch to spawn Cine cards correctly with debug menu and challenges (if that ever happens)
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -26,6 +30,9 @@ elseif G.cine_quests and card.ability.set == "Cine" then
 '''
 match_indent = true
 
+
+# Game:start_run()
+# patch to add the area for Cine Cards below consumables
 [[patches]]
 [patches.pattern]
 target = "game.lua"
@@ -40,19 +47,9 @@ self.cine_quests = CardArea(0, 0, CAI.deck_W, CAI.deck_H, {
 '''
 match_indent = true
 
-## I have no idea what this is even trying to do
-## Doesn't match even the source code, maybe for an older version?
-# [[patches]]
-# [patches.pattern]
-# target = "main.lua"
-# pattern = '''not c.ending_shop and not c.reroll_shop and not c.selling_card and not c.selling_self and not c.buying_card and'''
-# position = "after"
-# payload = '''
-# not c.cine_progress and not c.joker_added and not c.enhancing_card
-# and not c.debuff_or_flipped_played and not c.any_card_destroyed and
-# '''
-# match_indent = true
-
+# generate_card_ui()
+# Correct UI for negative cine cards
+# Used for Filmstrip Sleeve + Deck
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
@@ -65,6 +62,8 @@ end
 '''
 match_indent = true
 
+# Tag:get_uibox_table
+# Make skip tag show correctly in the shop (by default it adds one to the tag, now it won't do so if in shop/pack)
 [[patches]]
 [patches.pattern]
 target = "tag.lua"
@@ -80,34 +79,27 @@ match_indent = true
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
-pattern = '''card.ability.set ~= 'Default' and'''
+pattern = '''card.ability.set ~= 'Default' and*'''
 position = "before"
 payload = '''
 card.ability.set ~= "Tag" and
 '''
 match_indent = true
 
+# G.FUNCS.buy_from_shop
 # Prevent Tags from being added to the deck
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
 pattern = '''c1:add_to_deck()'''
-position = "after"
+position = "at"
 payload = '''
-::reverie_buy_from_shop_tag_skip::'''
-match_indent = true
-
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''c1:add_to_deck()'''
-position = "before"
-payload = '''
-if c1.ability.set == "Tag" then
-    goto reverie_buy_from_shop_tag_skip
+if c1.ability.set ~= "Tag" then
+    c1:add_to_deck()
 end'''
 match_indent = true
 
+# Tag:apply_to_run()
 # Ensures that the second tag created by a Double Tag triggers because if the Mega Stamp Tag
 # generates a Double Tag as its random tag and any immediate tag as its pack tag then the immediate
 # tag gets duplicated but the second copy will only trigger after clearing a blind
@@ -118,11 +110,12 @@ pattern = '''add_tag(Tag(_context.tag.key))'''
 position = "after"
 payload = '''
 for _, v in ipairs(G.GAME.tags) do
-        v:apply_to_run({type = "immediate"})
+    v:apply_to_run({type = "immediate"})
 end
 '''
 match_indent = true
 
+# G.FUNCS.buy_from_shop()
 # When Tags are purchased, properly add them to the game and remove from the shop
 # Applying immediate tags is handled in injected update_shop()
 [[patches]]
@@ -140,6 +133,7 @@ elseif c1.ability.set == "Tag" then
 '''
 match_indent = true
 
+# G.FUNCS.use_card()
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -161,6 +155,8 @@ elseif card.ability.set == "Tag" then
     delay_fac = 0.2'''
 match_indent = true
 
+# start_materialize()
+# Adds dissolve colour for cine cards
 [[patches]]
 [patches.pattern]
 target = "card.lua"
@@ -170,6 +166,8 @@ payload = '''
 (self.ability.set == 'Cine' and {G.C.SECONDARY_SET.Cine}) or'''
 match_indent = true
 
+# Card:draw()
+# Adds shaders for certain cine cards
 [[patches]]
 [patches.pattern]
 target = "card.lua"
@@ -193,6 +191,7 @@ end
 '''
 match_indent = true
 
+# G.FUNCS.use_card()
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -202,6 +201,7 @@ payload = '''
 ::reverie_use_card_consumable_skip::'''
 match_indent = true
 
+# G.FUNCS.use_card()
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -211,6 +211,7 @@ payload = '''
 local is_pack_card = card.area and card.area == G.pack_cards'''
 match_indent = true
 
+# G.FUNCS.use_card()
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -230,6 +231,8 @@ if is_pack_card and (Reverie.is_in_reverie_pack() or is_cine) then
 end'''
 match_indent = true
 
+# Card:redeem()
+# Dont play coin sfx if card has no cost
 [[patches]]
 [patches.regex]
 target = "card.lua"
@@ -238,21 +241,25 @@ position = "at"
 line_prepend = "$indent"
 payload = '''
 $capture
-if self.cost > 0 then
+if self.cost ~= 0 then
     $target
 end
 '''
 
+# card_eval_status_text()
+# Position card tooltips for cine cards
 [[patches]]
 [patches.pattern]
 target = "functions/common_events.lua"
-pattern = '''elseif card.area == G.hand then'''
+pattern = '''elseif card.area == G.hand*'''
 position = "before"
 payload = '''
 elseif card.area == G.cine_quests then
     y_off = 0.05 * card.T.h'''
 match_indent = true
 
+# G.FUNCS.end_consumeable()
+# blocks newly gained new_blind_choice tags from triggering in shop
 [[patches]]
 [patches.regex]
 target = "functions/button_callbacks.lua"
@@ -266,6 +273,8 @@ end
 
 '''
 
+# Card:hover()
+# Add tooltip for jokers affected by morsel
 [[patches]]
 [patches.pattern]
 target = "card.lua"
@@ -279,12 +288,13 @@ end
 '''
 match_indent = true
 
+# Card:add_to_deck()
+# Make negative cine cards change card_limit correctly when added to deck as negative
 [[patches]]
-[patches.regex]
+[patches.pattern]
 target = "card.lua"
-pattern = '''Card:add_to_deck\(from_debuff.*(\n.*?)*(?<indent>[\t ]*)G.jokers.config.card_limit = G.jokers.config.card_limit \+ 1'''
+pattern = '''G.jokers.config.card_limit = G.jokers.config.card_limit + self.edition.card_limit'''
 position = "after"
-line_prepend = "$indent"
 payload = '''
 
 if Reverie.is_cine_or_reverie(self) then
@@ -292,7 +302,10 @@ if Reverie.is_cine_or_reverie(self) then
     G.cine_quests.config.card_limit = G.cine_quests.config.card_limit + self.edition.card_limit
 end
 '''
+match_indent = true
 
+# Card:set_edition()
+# Make negative cine cards change card_limit correctly when negative is applied to it
 [[patches]]
 [patches.regex]
 target = "card.lua"
@@ -308,6 +321,7 @@ end
 '''
 
 # Card:remove_from_deck() and Card:remove()
+# Make removed negative cine cards modify card limit
 [[patches]]
 [patches.pattern]
 target = "card.lua"
@@ -323,27 +337,8 @@ end
 '''
 times = 2
 
-[[patches]]
-[patches.regex]
-target = "functions/button_callbacks.lua"
-pattern = '''G\.FUNCS\.reroll_shop.*(\n.*?)*?(?<indent>[ \t]*)for i = 1, G\.GAME\.shop\.joker_max - #G\.shop_jokers\.cards do.*(\n.*?)*?.+create_card_for_shop'''
-position = "after"
-root_capture = "$indent"
-line_prepend = "$indent"
-payload = '''
-
-if G.GAME.current_round.used_cine then
-    for i = 1, G.GAME.shop.joker_max - #G.shop_jokers.cards do
-        local new_shop_card = Reverie.create_card_for_cine_shop(G.shop_jokers)
-        G.shop_jokers:emplace(new_shop_card)
-        new_shop_card:juice_up()
-    end
-
-    return true
-end
-
-'''
-
+# G.FUNCS.use_card()
+# As the maintainer of the fork, couldn't tell ya what this is for
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -354,16 +349,8 @@ e.config.ref_table.ability.not_destroyed = true
 '''
 match_indent = true
 
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''G.CONTROLLER:recall_cardarea_focus('jokers')'''
-position = "after"
-payload = '''
-::reverie_buy_from_shop_tag_focus_skip::
-'''
-match_indent = true
-
+# G.FUNCS.buy_from_shop
+# Patch to make controller go to the correct card area after buying a shop tag
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -374,22 +361,25 @@ if c1.ability.set == "Tag" then
     G.CONTROLLER:save_cardarea_focus("shop_jokers")
     G.CONTROLLER:recall_cardarea_focus("shop_jokers")
 
-    goto reverie_buy_from_shop_tag_focus_skip
+else
+'''
+match_indent = true
+
+# G.FUNCS.buy_from_shop
+# Patch to make controller go to the correct card area after buying a shop tag
+# This just adds the end of the else statement
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = '''G.CONTROLLER:recall_cardarea_focus('jokers')'''
+position = "after"
+payload = '''
 end
 '''
 match_indent = true
 
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''desc_nodes.name = localize{type = 'name_text', key = name_override or _c.key, set = name_override and 'Other' or _c.set}*'''
-position = "after"
-payload = '''
-if _c.generate_detailed_tooltip and type(_c.generate_detailed_tooltip) == "function" then
-    _c:generate_detailed_tooltip(info_queue, card, desc_nodes)
-end'''
-match_indent = true
-
+# get_badge_colour()
+# Adds colour for Morsel badge
 [[patches]]
 [patches.pattern]
 target = "functions/UI_definitions.lua"
@@ -399,6 +389,8 @@ payload = '''
 morseled = HEX("b0aa9f"),'''
 match_indent = true
 
+# G.FUNCS.reroll_shop()
+# Set adjusted reroll prices for active cine cards
 [[patches]]
 [patches.pattern]
 target = "functions/button_callbacks.lua"
@@ -415,14 +407,14 @@ target = "functions/UI_definitions.lua"
 pattern = '''if polled_rate > check_rate and polled_rate <= check_rate + v.val then'''
 position = "before"
 payload = '''
-    if _ == 1 and G.GAME.selected_sleeve and G.GAME.selected_sleeve == "sleeve_dvrprv_filmstrip" and G.GAME.selected_back.name == "Filmstrip Deck" then
-        local rate = CardSleeves.Sleeve:get_obj(G.GAME.selected_sleeve).config.rate
-        table.insert(rates, {
-            type = "Cine_Quest",
-            val = rate
-        })
-        total_rate = total_rate + rate
-        polled_rate = pseudorandom(pseudoseed("cdt"..G.GAME.round_resets.ante)) * total_rate
-    end
+if _ == 1 and G.GAME.selected_sleeve and G.GAME.selected_sleeve == "sleeve_dvrprv_filmstrip" and G.GAME.selected_back.name == "Filmstrip Deck" then
+    local rate = CardSleeves.Sleeve:get_obj(G.GAME.selected_sleeve).config.rate
+    table.insert(rates, {
+        type = "Cine_Quest",
+        val = rate
+    })
+    total_rate = total_rate + rate
+    polled_rate = pseudorandom(pseudoseed("cdt"..G.GAME.round_resets.ante)) * total_rate
+end
 '''
 match_indent = true

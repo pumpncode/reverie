@@ -69,9 +69,9 @@ local function generate_ui(self, info_queue, card, desc_nodes, specific_vars, fu
     localize{type = "other", key = info.key, nodes = desc_nodes, vars = info.vars}
 end
 
-local function generate_detailed_tooltip(self, info_queue, card, desc_nodes)
-    desc_nodes.name = localize{type = "name_text", set = "Other", key = self:loc_vars(info_queue, card).key}
-end
+-- local function generate_detailed_tooltip(self, info_queue, card, desc_nodes)
+--     desc_nodes.name = localize{type = "name_text", set = "Other", key = self:loc_vars(info_queue, card).key}
+-- end
 
 Reverie.boosters = {
     {
@@ -269,7 +269,7 @@ for _, v in pairs(Reverie.boosters) do
     v.atlas = "cine_boosters"
     v.loc_vars = loc_vars
     v.generate_ui = generate_ui
-    v.generate_detailed_tooltip = generate_detailed_tooltip
+    -- v.generate_detailed_tooltip = generate_detailed_tooltip
 
     SMODS.Booster(v)
 end
