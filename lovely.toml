@@ -75,17 +75,7 @@ elseif name_to_check == 'Skip Tag' then loc_vars = {self.config.skip_bonus, self
 '''
 match_indent = true
 
-# Add fallback for Cine card
-[[patches]]
-[patches.pattern]
-target = "functions/common_events.lua"
-pattern = '''elseif _type == 'Tag' then _pool[#_pool + 1] = "tag_handy"'''
-position = "after"
-payload = '''
-elseif _type == "Cine" then _pool[#_pool + 1] = "c_dvrprv_gem_heist"
-elseif _type == "Cine_Quest" then _pool[#_pool + 1] = "c_dvrprv_gem_heist_quest"'''
-match_indent = true
-
+# G.FUNCS.check_for_buy_space()
 # Disable buy space check for Tags
 [[patches]]
 [patches.pattern]

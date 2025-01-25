@@ -172,6 +172,9 @@ SMODS.ConsumableType{
     end
 }
 
+SMODS.ObjectTypes["Cine"].default = "c_dvrprv_gem_heist"
+SMODS.ObjectTypes["Cine_Quest"] = {default = "c_dvrprv_gem_heist_quest"}
+
 local function can_use(self, card)
     if card.reward then
         return false
