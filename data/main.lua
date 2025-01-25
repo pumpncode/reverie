@@ -778,7 +778,7 @@ function Reverie.create_card_for_cine_shop(area)
         end
     end
 
-    local has_oddity = Reverie.find_mod("TheAutumnCircus")
+    local has_oddity = Reverie.find_mod("TheAutumnCircus") and OddityAPI
     local has_alchemical = Reverie.find_mod("CodexArcanum")
     local has_colour = Reverie.find_mod("MoreFluff")
 
@@ -814,7 +814,7 @@ function Reverie.create_card_for_cine_shop(area)
     }
 
     if has_oddity then
-        oddity_rate = G.GAME.oddity_rate > 0 and G.GAME.oddity_rate or G.GAME.cached_oddity_rate or 0
+        oddity_rate = (G.GAME.oddity_rate or 0) > 0 and G.GAME.oddity_rate or G.GAME.cached_oddity_rate or 0
         oddity_available = not is_forcing_card_set and not crazy_pack_available
         total_rate = total_rate + (oddity_available and oddity_rate or 0)
         table.insert(candidates, {type = "Oddity", val = oddity_available and oddity_rate or 0, available = oddity_available})
