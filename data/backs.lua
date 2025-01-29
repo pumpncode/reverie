@@ -23,6 +23,12 @@ Reverie.backs = {
             x = 0,
             y = 0
         },
+        unlocked = false,
+        check_for_unlock = function(self, args)
+            if args.type == 'win_stake' then
+                unlock_card(self)
+            end
+        end,
         loc_vars = function (self, info_queue, center)
             return {vars = {self.config.cine_slot}}
         end,
@@ -37,6 +43,12 @@ Reverie.backs = {
             x = 1,
             y = 0
         },
+        unlocked = false,
+        check_for_unlock = function(self, args)
+            if args.type == 'win_stake' and G.GAME.skips <= 0 then
+                unlock_card(self)
+            end
+        end,
         loc_vars = function (self, info_queue, center)
             return {vars = {
                 localize{

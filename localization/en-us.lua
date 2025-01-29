@@ -327,6 +327,11 @@ return {
                 text = {
                     "{C:cine}Cine{} cards can stack",
                     "{C:attention}+#1#{} Cine slot"
+                },
+                unlock = {
+                    'Win a run with the',
+                    '{C:attention}Reverie{} mod',
+                    'enabled'
                 }
             },
             b_dvrprv_stamp = {
@@ -334,6 +339,10 @@ return {
                 text = {
                     "Skipping a {C:attention}Blind{} gives",
                     "{C:attention,T:p_dvrprv_tag_jumbo_1}#1#{} instead"
+                },
+                unlock = {
+                    'Win a run without',
+                    '{C:attention}Skipping a Blind{}'
                 }
             }
         },
