@@ -427,6 +427,11 @@ return {
                     "Requirements of",
                     "{C:cine}Exchange Coupons{} are",
                     "halved"
+                },
+                unlock = {
+                    "Use a total of #1#",
+                    "{C:cine}Cine{} cards",
+                    "{C:inactive}(#2#)",
                 }
             }
         },

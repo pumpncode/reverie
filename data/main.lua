@@ -1149,6 +1149,9 @@ function Reverie.use_cine(center, card, area, copier)
         G.GAME.current_round.used_cine = {}
     end
 
+    inc_career_stat('c_Reverie_cines_used', 1)
+    check_for_unlock({type = 'career_stat', statname = 'c_Reverie_cines_used'})
+
     G.E_MANAGER:add_event(Event({
         trigger = "immediate",
         func = function()

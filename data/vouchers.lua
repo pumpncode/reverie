@@ -50,6 +50,14 @@ Reverie.vouchers = {
         requires = {
             "v_dvrprv_script"
         },
+        unlocked = false,
+        unlock_condition = {
+            type = "c_Reverie_cines_used",
+            extra = 5
+        },
+        locked_loc_vars = function(self, info_queue)
+            return { vars = { self.unlock_condition.extra, G.PROFILES[G.SETTINGS.profile].career_stats.c_Reverie_cines_used or 0 } }
+        end,
         config = {
             extra = 0.5
         },
