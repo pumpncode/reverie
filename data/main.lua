@@ -14,6 +14,20 @@ Reverie.flipped_booster_pos = {
     y = 0
 }
 
+function G.FUNCS.reverie_unlock_all()
+
+    local keys = {
+        "b_dvrprv_filmstrip",
+        "b_dvrprv_stamp",
+        "v_dvrprv_megaphone",
+    }
+
+    for _, key in ipairs(keys) do
+        local card = G.P_CENTERS[key]
+        unlock_card(card)
+    end
+end
+
 SMODS.current_mod.config_tab = function ()
     local jokerDisplay = Reverie.find_mod("JokerDisplay")
     local cartomancer = Reverie.find_mod("cartomancer")
@@ -99,6 +113,10 @@ SMODS.current_mod.config_tab = function ()
                             minw = 3
                         },
                         nodes = {
+                            UIBox_button({
+                                label = {"Unlock Reverie Cards"},
+                                button = 'reverie_unlock_all'
+                            }),
                             create_toggle({
                                 label = localize("b_dvrprv_tag_packs_shop"),
                                 info = localize("b_dvrprv_tag_packs_shop_info"),
