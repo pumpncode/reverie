@@ -729,5 +729,16 @@ for _, v in pairs(Reverie.cines) do
     v.inject = inject
     v.use = not v.reward and Reverie.use_cine or nil
 
+    -- Set cine card to its reward when flipped
+    -- Copies from Bunco's Cassette
+    v.update = function(self, card)
+        if card.VT.w <= 0 then
+            if card.config.center.reward then
+                card:set_ability(G.P_CENTERS[card.config.center.reward], true)
+                card.ability.progress = nil
+            end
+        end
+    end
+
     SMODS.Consumable(v)
 end

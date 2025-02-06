@@ -418,3 +418,18 @@ if _ == 1 and G.GAME.selected_sleeve and G.GAME.selected_sleeve == "sleeve_dvrpr
 end
 '''
 match_indent = true
+
+# Card:flip()
+# Creates illusion of Cine card flipping over to its back without actually flipping it over
+# Copied from Bunco's Cassette
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = "self.facing='back'"
+position = 'after'
+match_indent = true
+payload = '''
+if self.config.center.set == 'Cine' then
+    self:flip()
+end
+'''
