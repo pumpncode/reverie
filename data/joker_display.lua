@@ -142,6 +142,14 @@ function Card:update(dt)
 end
 
 Reverie.joker_display_definitions = {
+    j_dvrprv_dynamic_film = { -- Dynamic Film Joker
+        text = {
+            { text = "+" },
+            { ref_table = "card.ability.extra", ref_value = "chips", retrigger_type = "mult" }
+        },
+        text_config = { colour = G.C.CHIPS }
+    },
+
     c_dvrprv_ive_no_shape_quest = {
         text = progress_text,
         reminder_text = {
