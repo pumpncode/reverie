@@ -91,7 +91,8 @@ Reverie.tags = {
             y = 0
         },
         loc_vars = function (self, info_queue)
-            local info = G.P_CENTERS.p_dvrprv_film_normal_1:loc_vars(info_queue)
+            local fake_card = G.P_CENTERS.p_dvrprv_film_normal_1:create_fake_card()
+            local info = G.P_CENTERS.p_dvrprv_film_normal_1:loc_vars(info_queue, fake_card)
 
             info_queue[#info_queue + 1] = {
                 key = info.key,
@@ -116,7 +117,8 @@ Reverie.tags = {
         },
         yes_pool_flag = "tag_tag_available",
         loc_vars = function (self, info_queue)
-            local info = G.P_CENTERS.p_dvrprv_tag_jumbo_1:loc_vars(info_queue)
+            local fake_card = G.P_CENTERS.p_dvrprv_tag_jumbo_1:create_fake_card()
+            local info = G.P_CENTERS.p_dvrprv_tag_jumbo_1:loc_vars(info_queue, fake_card)
 
             info_queue[#info_queue + 1] = {
                 key = info.key,
@@ -141,7 +143,8 @@ Reverie.tags = {
         },
         yes_pool_flag = "tag_tag_available",
         loc_vars = function (self, info_queue)
-            local info = G.P_CENTERS.p_dvrprv_tag_jumbo_1:loc_vars(info_queue)
+            local fake_card = G.P_CENTERS.p_dvrprv_tag_jumbo_1:create_fake_card()
+            local info = G.P_CENTERS.p_dvrprv_tag_jumbo_1:loc_vars(info_queue, fake_card)
 
             info_queue[#info_queue + 1] = {
                 key = info.key,

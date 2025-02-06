@@ -183,17 +183,18 @@ local function can_use(self, card)
     end
 end
 
-local function loc_vars_cine(self, info_queue, center)
+local function loc_vars_cine(self, info_queue, card)
     local vars = nil
 
     if self.name == "Tag or Die" then
-        vars = {Reverie.get_var_object(center, self).extra.cost}
+        vars = {card.ability.extra.cost}
     elseif self.name == "The Unseen" or self.name == "Eerie Inn" then
-        vars = {Reverie.get_var_object(center, self).extra.mult}
+        vars = {card.ability.extra.mult}
     elseif self.name == "I Sing, I've No Shape" then
-        vars = {Reverie.get_var_object(center, self).extra.add}
+        vars = {card.ability.extra.add}
     elseif self.name == "Crazy Lucky" then
-        local info = G.P_CENTERS.p_dvrprv_crazy_lucky_1:loc_vars(info_queue)
+        local fake_card = G.P_CENTERS.p_dvrprv_crazy_lucky_1:create_fake_card()
+        local info = G.P_CENTERS.p_dvrprv_crazy_lucky_1:loc_vars(info_queue, fake_card)
 
         info_queue[#info_queue + 1] = {
             key = info.key,
@@ -201,17 +202,17 @@ local function loc_vars_cine(self, info_queue, center)
             vars = info.vars
         }
     elseif self.name == "Fool Metal Alchemist" then
-        vars = {Reverie.get_var_object(center, self).extra.slot}
+        vars = {card.ability.extra.slot}
     elseif self.name == "Every Hue" then
-        vars = {Reverie.get_var_object(center, self).extra.rounds}
+        vars = {card.ability.extra.rounds}
     else
-        vars = {Reverie.get_var_object(center, self).extra}
+        vars = {card.ability.extra}
     end
 
     return {vars = vars}
 end
 
-local function loc_vars_quest(self, info_queue, center)
+local function loc_vars_quest(self, info_queue, card)
     local vars = nil
 
     local reward_card = self.reward
@@ -219,22 +220,22 @@ local function loc_vars_quest(self, info_queue, center)
     info_queue[#info_queue + 1] = G.P_CENTERS[reward_card]
 
     if reward_card == "c_dvrprv_unseen" then
-        vars = {center.ability.extra.slots, center.ability.extra.goal, center.ability.progress}
+        vars = {card.ability.extra.slots, card.ability.extra.goal, card.ability.progress}
     elseif reward_card == "c_dvrprv_ive_no_shape" then
-        vars = {center.ability.extra.chips, center.ability.extra.goal, center.ability.progress}
+        vars = {card.ability.extra.chips, card.ability.extra.goal, card.ability.progress}
     elseif reward_card == "c_dvrprv_jovial_m" then
         info_queue[#info_queue + 1] = {
             key = "j_jolly",
             set = "Joker",
             specific_vars = {G.P_CENTERS.j_jolly.config.t_mult, G.P_CENTERS.j_jolly.config.type}
         }
-        vars = {center.ability.extra.goal, center.ability.progress, localize{
+        vars = {card.ability.extra.goal, card.ability.progress, localize{
             type = "name_text",
             set = "Joker",
             key = "j_jolly"
         }}
     else
-        vars = {center.ability.extra.goal, center.ability.progress}
+        vars = {card.ability.extra.goal, card.ability.progress}
     end
 
     return {vars = vars}

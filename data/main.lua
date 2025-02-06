@@ -1649,26 +1649,26 @@ function Reverie.progress_cine_quest(card)
 
     card.ability.progress = card.ability.progress + 1
 
-    for _, v in ipairs(G.jokers.cards) do
-        v:calculate_joker({
-            cine_progress = true,
-            card = card
-        })
-    end
-
-    if card.ability.progress == card.ability.extra.goal then
-        Reverie.complete_cine_quest(card)
-    elseif card.ability.progress < card.ability.extra.goal then
+    if card.ability.progress <= card.ability.extra.goal then
         card_eval_status_text(card, "extra", nil, nil, nil, {
             message = card.ability.progress.."/"..card.ability.extra.goal,
             colour = G.C.SECONDARY_SET.Cine
         })
     end
+    if card.ability.progress == card.ability.extra.goal then
+        Reverie.complete_cine_quest(card)
+    end
+
+    SMODS.calculate_context({cine_progress = true, card = card})
 end
 
 function Reverie.complete_cine_quest(card)
+
+
     G.E_MANAGER:add_event(Event({
         func = function()
+            G.GAME.used_jokers[card.config.center_key] = nil
+            card.config.card = {}
             local percent = 1.15 - (1 - 0.999) / (1 - 0.998) * 0.3
             G.E_MANAGER:add_event(Event({
                 trigger = "after",
@@ -1681,43 +1681,14 @@ function Reverie.complete_cine_quest(card)
                     return true
                 end
             }))
-            delay(0.2)
-            G.E_MANAGER:add_event(Event({
-                trigger = "after",
-                delay = 0.1,
-                func = function()
-                    G.GAME.used_jokers[card.config.center_key] = nil
-                    card.config.card = {}
-                    if not G.P_CENTERS[card.config.center.reward] then return true end -- Failsafe
-                    card:set_ability(G.P_CENTERS[card.config.center.reward], true)
-
-                    if not card.config.center.discovered then
-                        discover_card(card.config.center)
-                    end
-
-                    if Reverie.find_mod("JokerDisplay") and _G["JokerDisplay"] and Reverie.config.jokerdisplay_compat then
-                        card.joker_display_values.disabled = true
-                    end
-
-                    card.ability.progress = nil
-
-                    return true
-                end
-            }))
-
-            percent = 0.85 + (1 - 0.999) / (1 - 0.998) * 0.3
-            G.E_MANAGER:add_event(Event({
-                trigger = "after",
-                delay = 0.15,
-                func = function()
-                    card:flip()
-                    play_sound("tarot2", percent, 0.6)
-                    card:juice_up(0.3, 0.3)
-
-                    return true
-                end
-            }))
-
+            return true
+        end
+    }))
+    G.E_MANAGER:add_event(Event({
+        func = function()
+            if Reverie.find_mod("JokerDisplay") and _G["JokerDisplay"] and Reverie.config.jokerdisplay_compat then
+                card.joker_display_values.disabled = true
+            end
             return true
         end
     }))
@@ -1992,10 +1963,6 @@ function Reverie.is_in_reverie_pack()
             return true
         end
     end
-end
-
-function Reverie.get_var_object(card, center)
-    return card and card.ability or center.config
 end
 
 local check_for_buy_space_ref = G.FUNCS.check_for_buy_space
