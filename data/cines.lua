@@ -583,7 +583,7 @@ Reverie.cines = {
             extra = {
                 slot = 2,
                 kind = {
-                    "p_alchemy_"
+                    SMODS.find_mod("ReduxArcanum") and "p_ReduxArcanum_alchemy_" or "p_alchemy_",
                 }
             }
         },
