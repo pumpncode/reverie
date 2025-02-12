@@ -549,6 +549,7 @@ function Reverie.get_food_jokers()
         "j_paperback_coffee",
         "j_paperback_cream_liqueur",
         "j_paperback_epic_sauce",
+        "j_paperback_champagne",
         "j_twewy_candleService",
         "j_twewy_burningCherry",
         "j_twewy_burningMelon",
