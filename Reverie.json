@@ -8,7 +8,8 @@
     "prefix": "dvrprv",
     "main_file": "Reverie.lua",
 	"dependencies": [
-		"Steamodded (>=1.0.0~ALPHA-1306a)"
+		"Steamodded (>=1.0.0~ALPHA-1306a)",
+        "Lovely (>=0.7)"
 	],
 	"conflicts": [
 		"CardSleeves (<<1.6.0)"
