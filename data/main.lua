@@ -1015,9 +1015,12 @@ function CardArea:emplace(card, location, stay_flipped)
         if Reverie.find_used_cine("Adrifting") and self ~= G.pack_cards then
             card.cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
             card.sell_cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
-            card.facing = "back"
-            card.sprite_facing = "back"
-            card.pinch.x = false
+            -- Slight Bunco synergy, Fluorescent cards will be visible with Adrifting
+            if not (card.edition and card.edition.bunc_fluorescent) then
+                card.facing = "back"
+                card.sprite_facing = "back"
+                card.pinch.x = false
+            end
         elseif Reverie.find_used_cine("Crazy Lucky") and self == G.shop_booster and card.config.center.kind ~= "Crazy" then
             local c = self:remove_card(card)
             c:remove()
