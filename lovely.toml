@@ -166,30 +166,30 @@ payload = '''
 (self.ability.set == 'Cine' and {G.C.SECONDARY_SET.Cine}) or'''
 match_indent = true
 
-# Card:draw()
-# Adds shaders for certain cine cards
-[[patches]]
-[patches.pattern]
-target = "card.lua"
-pattern = '''if self.ability.name == 'Invisible Joker' and (self.config.center.discovered or self.bypass_discovery_center) then'''
-position = "before"
-payload = '''
-if self.ability.set == "Cine" and (not self.edition or not self.edition.negative) then
-    if self.ability.name == "The Unseen" and (self.config.center.discovered or self.bypass_discovery_center) then
-        self.children.center:draw_shader("dvrprv_ticket_negative", nil, self.ARGS.send_to_shader)
-        self.children.center:draw_shader("negative_shine", nil, self.ARGS.send_to_shader)
+# # Card:draw()
+# # Adds shaders for certain cine cards
+# [[patches]]
+# [patches.pattern]
+# target = "card.lua"
+# pattern = '''if self.ability.name == 'Invisible Joker' and (self.config.center.discovered or self.bypass_discovery_center) then'''
+# position = "before"
+# payload = '''
+# if self.ability.set == "Cine" and (not self.edition or not self.edition.negative) then
+#     if self.ability.name == "The Unseen" and (self.config.center.discovered or self.bypass_discovery_center) then
+#         self.children.center:draw_shader("dvrprv_ticket_negative", nil, self.ARGS.send_to_shader)
+#         self.children.center:draw_shader("negative_shine", nil, self.ARGS.send_to_shader)
 
-        if self.children.front then
-            self.children.front:draw_shader("dvrprv_ticket_negative", nil, self.ARGS.send_to_shader)
-        end
-    elseif self.ability.name == "I Sing, I've No Shape" and self.config.center.discovered then
-        self.children.center:draw_shader("dvrprv_ticket_polychrome", nil, self.ARGS.send_to_shader)
-    else
-        self.children.center:draw_shader("dvrprv_ticket", nil, self.ARGS.send_to_shader)
-    end
-end
-'''
-match_indent = true
+#         if self.children.front then
+#             self.children.front:draw_shader("dvrprv_ticket_negative", nil, self.ARGS.send_to_shader)
+#         end
+#     elseif self.ability.name == "I Sing, I've No Shape" and self.config.center.discovered then
+#         self.children.center:draw_shader("dvrprv_ticket_polychrome", nil, self.ARGS.send_to_shader)
+#     else
+#         self.children.center:draw_shader("dvrprv_ticket", nil, self.ARGS.send_to_shader)
+#     end
+# end
+# '''
+# match_indent = true
 
 # G.FUNCS.use_card()
 [[patches]]
@@ -467,4 +467,43 @@ payload = '''
 if self.config.center.set == 'Cine' then
     self:flip()
 end
+'''
+
+[[patches]]
+[patches.pattern]
+target = 'card.lua'
+pattern = "G.shared_shadow = self.sprite_facing == 'front' and self.children.center or self.children.back"
+position = 'after'
+match_indent = true
+payload = '''
+if (self.reverie_custom_shadow) and G.SETTINGS.GRAPHICS.shadows == 'On' and ((layer == 'shadow' or layer == 'both') and (self.ability.effect ~= 'Glass Card' and not self.greyed) and ((self.area and self.area ~= G.discard and self.area.config.type ~= 'deck') or not self.area or self.states.drag.is)) then
+    self.ARGS.send_to_shader[3] = self.omit_top_half or 0
+    self.ARGS.send_to_shader[4] = self.omit_bottom_half or 0
+
+    self.shadow_height = 0 * (0.08 + 0.4 * math.sqrt(self.velocity.x ^ 2)) + ((((self.highlighted and self.area == G.play) or self.states.drag.is) and 0.35) or (self.area and self.area.config.type == 'title_2') and 0.04 or 0.1)
+    G.shared_shadow:draw_shader('dvrprv_ticket', self.shadow_height, self.ARGS.send_to_shader)
+end
+'''
+
+# Disable edition shaders for cine cards (they mess up purchase animation)
+[[patches]]
+[patches.regex]
+target = "card.lua"
+pattern = '''(?<indent>[\t ]*)(?<cond>if self\.edition then)(?<post>\n[\t ]*for k, v in pairs\(G\.P_CENTER_POOLS\.Edition\) do\n[\t ]*if self\.edition\[v\.key:sub\(3\)\] and v\.shader then)'''
+position = "at"
+line_prepend = "$indent"
+payload = '''
+    if self.edition and not Reverie.is_cine_or_reverie(self) then
+        $post
+'''
+
+# Disable edition shaders for cine cards (they mess up purchase animation)
+[[patches]]
+[patches.regex]
+target = "card.lua"
+pattern = '''(?<indent>[\t ]*)if \(self\.edition and self\.edition\.negative\)(?<post>.*)'''
+position = "at"
+line_prepend = "$indent"
+payload = '''
+if (self.edition and self.edition.negative and not Reverie.is_cine_or_reverie(self))$post
 '''
