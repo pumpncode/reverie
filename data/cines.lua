@@ -144,11 +144,6 @@ SMODS.ConsumableType{
     collection_rows = { 4, 6 },
     primary_colour = G.C.SET.Joker,
     secondary_colour = Reverie.badge_colour,
-    loc_txt = {
-        collection = "Cine Cards",
-        name = "Cine",
-        label = "Cine"
-    },
     create_UIBox_your_collection = create_UIBox_your_collection_cines,
     inject = function (self)
         SMODS.ConsumableType.inject(self)
