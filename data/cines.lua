@@ -176,7 +176,7 @@ SMODS.ObjectTypes["Cine"].default = "c_dvrprv_gem_heist"
 SMODS.ObjectTypes["Cine_Quest"] = {default = "c_dvrprv_gem_heist_quest"}
 
 local function can_use(self, card)
-    if card.reward then
+    if card.config.center.reward then
         return false
     else
         return G.STATE == G.STATES.SHOP and G.shop
