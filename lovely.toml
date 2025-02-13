@@ -263,7 +263,7 @@ match_indent = true
 [[patches]]
 [patches.regex]
 target = "functions/button_callbacks.lua"
-pattern = '''ease_background_colour_blind\(G.GAME.PACK_INTERRUPT\)\n.*\n.*\n.*\n(?<indent>[ \t]*)for i = 1, #G\.GAME\.tags do\n'''
+pattern = '''ease_background_colour_blind\(G.GAME.PACK_INTERRUPT\)((.|\n)*?)(?<indent>[ \t]*)for i = 1, #G\.GAME\.tags do\n'''
 position = "after"
 line_prepend = "$indent"
 payload = '''
