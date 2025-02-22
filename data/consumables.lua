@@ -20,17 +20,19 @@ Reverie.consumables = {
             card.ignore_base_shader = { ticket = true }
         end,
         draw = function(self, card, layer)
-            if not (card.edition and card.edition.negative) then
-                card.ARGS.send_to_shader[3] = card.omit_top_half or 0
-                card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
-    
-                card.children.center:draw_shader("dvrprv_ticket", nil, card.ARGS.send_to_shader)
-            end
-            if card.edition and card.edition.negative then
-                card.ARGS.send_to_shader[3] = card.omit_top_half or 0
-                card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
-    
-                card.children.center:draw_shader("dvrprv_cine_negative", nil, card.ARGS.send_to_shader)
+            if card.ARGS and card.ARGS.send_to_shader then
+                if not (card.edition and card.edition.negative) then
+                    card.ARGS.send_to_shader[3] = card.omit_top_half or 0
+                    card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
+        
+                    card.children.center:draw_shader("dvrprv_ticket", nil, card.ARGS.send_to_shader)
+                end
+                if card.edition and card.edition.negative then
+                    card.ARGS.send_to_shader[3] = card.omit_top_half or 0
+                    card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
+        
+                    card.children.center:draw_shader("dvrprv_cine_negative", nil, card.ARGS.send_to_shader)
+                end
             end
         end
     }
