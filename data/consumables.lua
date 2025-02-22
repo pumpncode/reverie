@@ -20,19 +20,30 @@ Reverie.consumables = {
             card.ignore_base_shader = { ticket = true }
         end,
         draw = function(self, card, layer)
-            if card.ARGS and card.ARGS.send_to_shader then
-                if not (card.edition and card.edition.negative) then
-                    card.ARGS.send_to_shader[3] = card.omit_top_half or 0
-                    card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
-        
-                    card.children.center:draw_shader("dvrprv_ticket", nil, card.ARGS.send_to_shader)
+            if not card.ARGs then
+                card.ARGS = card.ARGS or {}
+            end
+            if not card.ARGS.send_to_shader then
+                card.ARGS.send_to_shader = card.ARGS.send_to_shader or {}
+                card.ARGS.send_to_shader[1] = math.min(card.VT.r*3, 1) + math.sin(G.TIMERS.REAL/28) + 1 + (card.juice and card.juice.r*20 or 0) + card.tilt_var.amt
+                card.ARGS.send_to_shader[2] = G.TIMERS.REAL
+
+                for k, v in pairs(card.children) do
+                    v.VT.scale = card.VT.scale
                 end
-                if card.edition and card.edition.negative then
-                    card.ARGS.send_to_shader[3] = card.omit_top_half or 0
-                    card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
-        
-                    card.children.center:draw_shader("dvrprv_cine_negative", nil, card.ARGS.send_to_shader)
-                end
+            end
+            if not (card.edition and card.edition.negative) then
+                card.ARGS.send_to_shader = card.ARGS.send_to_shader or {}
+                card.ARGS.send_to_shader[3] = card.omit_top_half or 0
+                card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
+
+                card.children.center:draw_shader("dvrprv_ticket", nil, card.ARGS.send_to_shader)
+            end
+            if card.edition and card.edition.negative then
+                card.ARGS.send_to_shader[3] = card.omit_top_half or 0
+                card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
+
+                card.children.center:draw_shader("dvrprv_cine_negative", nil, card.ARGS.send_to_shader)
             end
         end
     }
