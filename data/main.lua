@@ -284,11 +284,19 @@ function Reverie.create_tag_as_card(area, big)
         bypass_back = G.GAME.selected_back.pos
     })
     card.config.center_key = key
-    card.ability.tag = Tag(key)
+    card.ability.tag = Tag(key, false, "Small")
     card.ability.tag.ability.as_card = true
+
+    -- card.ability.tag:set_ability()
+
+    for k, v in pairs(card.ability.tag.ability) do
+        card.ability[k] = v
+    end
+
     card.base_cost = G.P_CENTERS.c_dvrprv_tag_or_die.config.extra.cost
     card:set_cost()
 
+    -- Prevents orbital tag from always being the same hand
     if card.ability.name == "Orbital Tag" then
         local poker_hands = {}
         for k, v in pairs(G.GAME.hands) do
@@ -299,6 +307,22 @@ function Reverie.create_tag_as_card(area, big)
 
         card.ability.orbital_hand = pseudorandom_element(poker_hands, pseudoseed("orbital"))
         card.ability.tag.ability.orbital_hand = card.ability.orbital_hand
+    end
+
+    -- Ortalab compat
+    if card.ability.name == "tag_ortalab_constellation" then
+        local _poker_hands = {}
+        for k, _ in pairs(G.ZODIACS) do
+            _poker_hands[#_poker_hands+1] = k
+        end
+    
+        local zodiac1 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
+        local zodiac2 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
+        while zodiac1 == zodiac2 do
+            zodiac2 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
+        end
+        card.ability.zodiac_hands = {zodiac1, zodiac2}
+        card.ability.tag.ability.zodiac_hands = card.ability.zodiac_hands
     end
 
     return card
