@@ -310,7 +310,7 @@ function Reverie.create_tag_as_card(area, big)
     end
 
     -- Ortalab compat
-    if card.ability.name == "tag_ortalab_constellation" then
+    if Reverie.find_mod("ortalab") and card.ability.name == "tag_ortalab_constellation" then
         local _poker_hands = {}
         for k, _ in pairs(G.ZODIACS) do
             _poker_hands[#_poker_hands+1] = k
