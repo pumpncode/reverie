@@ -1852,7 +1852,7 @@ function Reverie.progress_cine_quest(card)
             colour = G.C.SECONDARY_SET.Cine
         })
     end
-    if card.ability.progress == card.ability.extra.goal then
+    if card.ability.progress >= card.ability.extra.goal then
         Reverie.complete_cine_quest(card)
     end
 
@@ -1860,6 +1860,8 @@ function Reverie.progress_cine_quest(card)
 end
 
 function Reverie.complete_cine_quest(card)
+    if card.flipping or not card.ability.progress then return end -- Safety check
+
     G.E_MANAGER:add_event(Event({
         func = function()
             G.GAME.used_jokers[card.config.center_key] = nil
@@ -1869,6 +1871,7 @@ function Reverie.complete_cine_quest(card)
                 trigger = "after",
                 delay = 0.15,
                 func = function()
+                    if card.flipping then return end -- Safety check
                     card:flip()
                     play_sound("card1", percent)
                     card:juice_up(0.3, 0.3)
@@ -1882,6 +1885,7 @@ function Reverie.complete_cine_quest(card)
     G.E_MANAGER:add_event(Event({
         func = function()
             if Reverie.find_mod("JokerDisplay") and _G["JokerDisplay"] and Reverie.config.jokerdisplay_compat then
+                if card.flipping then return end -- Safety check
                 card.joker_display_values.disabled = true
             end
             return true
