@@ -309,18 +309,19 @@ function Reverie.create_tag_as_card(area, big)
         card.ability.tag.ability.orbital_hand = card.ability.orbital_hand
     end
 
-    -- Ortalab compat
+    -- Ortalab compat to prevent Constellation patch from always being the same hand
     if Reverie.find_mod("ortalab") and card.ability.name == "tag_ortalab_constellation" then
         local _poker_hands = {}
         for k, _ in pairs(G.ZODIACS) do
             _poker_hands[#_poker_hands+1] = k
         end
-    
+
         local zodiac1 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
         local zodiac2 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
         while zodiac1 == zodiac2 do
             zodiac2 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
         end
+
         card.ability.zodiac_hands = {zodiac1, zodiac2}
         card.ability.tag.ability.zodiac_hands = card.ability.zodiac_hands
     end
