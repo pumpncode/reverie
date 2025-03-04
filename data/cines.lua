@@ -169,7 +169,8 @@ SMODS.ConsumableType {
     delete_card = function(self, center)
         SMODS.ConsumableType.delete_card(self, center)
         SMODS.remove_pool(G.P_CENTER_POOLS[center.reward and "Cine_Quest" or "Cine"], center.key)
-    end
+    end,
+    shop_rate = 0
 }
 
 SMODS.ObjectTypes["Cine"].default = "c_dvrprv_gem_heist"
