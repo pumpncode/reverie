@@ -722,6 +722,38 @@ Reverie.cines = {
 
 table.sort(Reverie.cines, function(a, b) return a.order < b.order end)
 
+-- Custom DrawStep for shadows on cine cards
+SMODS.DrawStep {
+    key = 'cine_shadow',
+    order = -999,
+    layers = { shadow = true, both = true },
+    func = function(self)
+
+        if not Reverie.is_cine_or_reverie(self) then return end
+
+        self.ARGS.send_to_shader = self.ARGS.send_to_shader or {}
+        self.ARGS.send_to_shader[1] = math.min(self.VT.r*3, 1) + math.sin(G.TIMERS.REAL/28) + 1 + (self.juice and self.juice.r*20 or 0) + self.tilt_var.amt
+        self.ARGS.send_to_shader[2] = G.TIMERS.REAL
+        self.ARGS.send_to_shader[3] = self.omit_top_half or 0
+        self.ARGS.send_to_shader[4] = self.omit_bottom_half or 0
+
+        for k, v in pairs(self.children) do
+            v.VT.scale = self.VT.scale
+        end
+    
+        G.shared_shadow = self.sprite_facing == 'front' and self.children.center or self.children.back
+    
+        --Draw the shadow
+        if (self.reverie_custom_shadow) and G.SETTINGS.GRAPHICS.shadows == 'On' and ((self.ability.effect ~= 'Glass Card' and not self.greyed) and ((self.area and self.area ~= G.discard and self.area.config.type ~= 'deck') or not self.area or self.states.drag.is)) then
+            self.shadow_height = 0 * (0.08 + 0.4 * math.sqrt(self.velocity.x ^ 2)) + ((((self.highlighted and self.area == G.play) or self.states.drag.is) and 0.35) or (self.area and self.area.config.type == 'title_2') and 0.04 or 0.1)
+            G.shared_shadow:draw_shader('dvrprv_ticket', self.shadow_height, self.ARGS.send_to_shader)
+        end
+
+        self.ARGS.send_to_shader[4] = nil
+        self.ARGS.send_to_shader[3] = nil
+    end,
+}
+
 for _, v in pairs(Reverie.cines) do
     v.set = "Cine"
     v.atlas = "Cine"
