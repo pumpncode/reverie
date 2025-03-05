@@ -321,7 +321,13 @@ Reverie.cines = {
         order = 2,
         name = "Gem Heist",
         config = {
-            extra = 25
+            extra = {
+                discount = 25,
+                kind = {
+                    "p_buffoon_",
+                    "p_standard_"
+                }
+            },
         },
         cost = 4,
         pos = {
