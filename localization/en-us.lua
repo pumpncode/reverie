@@ -52,7 +52,7 @@ return {
                     "During this shop,",
                     "all cards become",
                     "{C:dark_edition}Polychrome{} and {C:attention}25%{} off",
-                    "{s:0.8}Rerolls cards"
+                    "{s:0.8}Rerolls cards and {s:0.8,C:attention}Booster Packs"
                 }
             },
             c_dvrprv_crazy_lucky_quest = {
