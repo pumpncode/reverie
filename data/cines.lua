@@ -525,7 +525,9 @@ Reverie.cines = {
         order = 14,
         name = "Adrifting",
         config = {
-            extra = 1
+            extra = {
+                discount = 100
+            }
         },
         cost = 4,
         pos = {

@@ -1036,10 +1036,10 @@ function CardArea:emplace(card, location, stay_flipped)
             end
         end
 
-        if heist then
-            card.cost = math.max(1, math.floor(card.cost * (100 - G.P_CENTERS.c_dvrprv_gem_heist.config.extra) / 100))
-            card.sell_cost = math.max(1, math.floor(card.cost / 2)) + (card.ability.extra_value or 0)
-        end
+        -- if heist then
+        --     card.cost = math.max(1, math.floor(card.cost * (100 - G.P_CENTERS.c_dvrprv_gem_heist.config.extra.discount) / 100))
+        --     card.sell_cost = math.max(1, math.floor(card.cost / 2)) + (card.ability.extra_value or 0)
+        -- end
 
         if Reverie.find_used_cine("Morsel") and Reverie.is_food_joker(card.config.center.key) then
             card.ability.morseled = true
@@ -1057,9 +1057,18 @@ function CardArea:emplace(card, location, stay_flipped)
             end
         end
 
+        for _, v in ipairs(G.GAME.current_round.used_cine or {}) do
+            local center = Reverie.find_cine_center(v)
+    
+            if center and type(center.config.extra) == "table" and center.config.extra.discount then
+                card.cost = math.max(1, math.floor(card.cost * (100 - center.config.extra.discount) / 100))
+                card.sell_cost = math.max(1, math.floor(card.cost / 2)) + (card.ability.extra_value or 0)
+            end
+        end
+
         if Reverie.find_used_cine("Adrifting") and self ~= G.pack_cards then
-            card.cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
-            card.sell_cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
+            -- card.cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
+            -- card.sell_cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
             -- Slight Bunco synergy, Fluorescent cards will be visible with Adrifting
             if not (card.edition and card.edition.bunc_fluorescent) then
                 card.facing = "back"
@@ -1364,7 +1373,7 @@ function Reverie.use_cine(center, card, area, copier)
             -- Manipulate vouchers
             for _, v in ipairs(G.shop_vouchers.cards) do
                 if card.ability.name == "Adrifting" then
-                    v.cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
+                    v.cost = math.max(1, math.floor(card.cost * (100 - G.P_CENTERS.c_dvrprv_adrifting.config.extra.discount) / 100))
                     v:flip()
                 elseif is_reverie or card.ability.name == "Crazy Lucky" then
                     local c = G.shop_vouchers:remove_card(v)

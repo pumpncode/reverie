@@ -156,7 +156,7 @@ return {
                 text = {
                     "During this shop,",
                     "everything is {C:attention}faced",
-                    "{C:attention}down{} and costs {C:money}$#1#",
+                    "{C:attention}down{} and costs {C:money}$1",
                     "{s:0.8}Rerolls cards and {s:0.8,C:attention}Booster Packs"
                 }
             },
