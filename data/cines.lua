@@ -796,6 +796,13 @@ for _, v in pairs(Reverie.cines) do
                 card.children.center:draw_shader("dvrprv_ticket", nil, card.ARGS.send_to_shader)
             end
         end
+        if card.edition and card.edition.polychrome then
+            card.ARGS.send_to_shader[3] = card.omit_top_half or 0
+            card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
+
+            -- Different from "ticket_negative", this is a direct copy of negative with no intended visual changes
+            card.children.center:draw_shader("dvrprv_cine_polychrome", nil, card.ARGS.send_to_shader)
+        end
         if card.edition and card.edition.negative then
             card.ARGS.send_to_shader[3] = card.omit_top_half or 0
             card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
