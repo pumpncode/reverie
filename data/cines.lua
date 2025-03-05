@@ -788,9 +788,9 @@ for _, v in pairs(Reverie.cines) do
             card.ARGS.send_to_shader[3] = card.omit_top_half or 0
             card.ARGS.send_to_shader[4] = card.omit_bottom_half or 0
 
-            if card.ability.name == "The Unseen" and (card.config.center.discovered or card.bypass_discovery_center) then
+            if card.ability.name == "The Unseen" and card.ability.progress == nil and (card.config.center.discovered or card.bypass_discovery_center) then
                 card.children.center:draw_shader("dvrprv_ticket_negative", nil, card.ARGS.send_to_shader)
-            elseif card.ability.name == "I Sing, I've No Shape" and card.config.center.discovered then
+            elseif card.ability.name == "I Sing, I've No Shape" and card.ability.progress == nil and card.config.center.discovered then
                 card.children.center:draw_shader("dvrprv_ticket_polychrome", nil, card.ARGS.send_to_shader)
             else
                 card.children.center:draw_shader("dvrprv_ticket", nil, card.ARGS.send_to_shader)
@@ -809,10 +809,8 @@ for _, v in pairs(Reverie.cines) do
     -- Copied from Bunco's Cassette
     v.update = function(self, card)
         if card.VT.w <= 0 then
-            if card.config.center.reward then
-                card:set_ability(G.P_CENTERS[card.config.center.reward], true)
-                card.ability.progress = nil
-            end
+            card.children.center:set_sprite_pos(G.P_CENTERS[card.config.center.key].pos)
+            card.ability.progress = nil
         end
     end
 

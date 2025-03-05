@@ -1871,6 +1871,10 @@ end
 function Reverie.complete_cine_quest(card)
     if card.flipping or not card.ability.progress then return end -- Safety check
 
+    local orig_pos = card.config.center.pos
+    card:set_ability(G.P_CENTERS[card.config.center.reward], true)
+    card.children.center:set_sprite_pos(orig_pos)
+
     G.E_MANAGER:add_event(Event({
         func = function()
             G.GAME.used_jokers[card.config.center_key] = nil
