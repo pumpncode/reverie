@@ -836,11 +836,11 @@ function Reverie.create_card_for_cine_shop(area)
     local has_colour = Reverie.find_mod("MoreFluff")
 
     local crazy_pack_available = Reverie.find_used_cine("Crazy Lucky")
-    local joker_available = (Reverie.find_used_cine_or("I Sing, I've No Shape", "Morsel", "Gem Heist", "Radioactive", "Jovial M") or not is_forcing_card_set) and
+    local joker_available = (Reverie.find_used_cine_or("I Sing, I've No Shape", "Morsel", "Gem Heist", "Radioactive", "Jovial M") or (not Reverie.find_mod("Bunco") and Reverie.find_used_cine("Gem Heist")) or not is_forcing_card_set) and
         not crazy_pack_available
     local planet_or_tarot_available = (Reverie.find_used_cine("Let It Moon") or not is_forcing_card_set) and
         not crazy_pack_available
-    local playing_available = (Reverie.find_used_cine("Poker Face", "Gem Heist") or not is_forcing_card_set) and
+    local playing_available = (Reverie.find_used_cine("Poker Face") or (not Reverie.find_mod("Bunco") and Reverie.find_used_cine("Gem Heist")) or not is_forcing_card_set) and
         not crazy_pack_available
     local spectral_available = (Reverie.find_used_cine("Eerie Inn") or not is_forcing_card_set) and
         not crazy_pack_available
@@ -1013,9 +1013,10 @@ function CardArea:emplace(card, location, stay_flipped)
     if self == G.shop_jokers or self == G.shop_vouchers or self == G.shop_booster or self == G.pack_cards then
         local unseen, heist = Reverie.find_used_cine("The Unseen"), Reverie.find_used_cine("Gem Heist")
         local is_dx_tarot_planet = Reverie.find_mod("JeffDeluxeConsumablesPack") and card.ability.set == "Planet"
+        local is_bunco_consumable = Reverie.find_mod("Bunco") and card.ability.consumeable
         local editions = {}
 
-        if heist and (card.ability.set == "Joker" or is_dx_tarot_planet or card.ability.set == "Default" or card.ability.set == "Enhanced") then
+        if heist and (card.ability.set == "Joker" or is_dx_tarot_planet or is_bunco_consumable or card.ability.set == "Default" or card.ability.set == "Enhanced") then
             table.insert(editions, "polychrome")
         end
         if unseen and (card.ability.set == "Joker" or card.ability.consumeable) then
