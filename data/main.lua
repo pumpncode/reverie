@@ -733,7 +733,7 @@ end
 
 function Reverie.is_cine_forcing_card_set()
     return Reverie.find_used_cine_or("I Sing, I've No Shape", "Crazy Lucky", "Tag or Die", "Let It Moon",
-        "Poker Face", "Eerie Inn", "Morsel", "Fool Metal Alchemist", "Every Hue", "Radioactive", "Jovial M")
+        "Poker Face", "Eerie Inn", "Morsel", "Gem Heist", "Fool Metal Alchemist", "Every Hue", "Radioactive", "Jovial M")
 end
 
 function Reverie.get_used_cine_kinds()
@@ -836,11 +836,11 @@ function Reverie.create_card_for_cine_shop(area)
     local has_colour = Reverie.find_mod("MoreFluff")
 
     local crazy_pack_available = Reverie.find_used_cine("Crazy Lucky")
-    local joker_available = (Reverie.find_used_cine_or("I Sing, I've No Shape", "Morsel", "Radioactive", "Jovial M") or not is_forcing_card_set) and
+    local joker_available = (Reverie.find_used_cine_or("I Sing, I've No Shape", "Morsel", "Gem Heist", "Radioactive", "Jovial M") or not is_forcing_card_set) and
         not crazy_pack_available
     local planet_or_tarot_available = (Reverie.find_used_cine("Let It Moon") or not is_forcing_card_set) and
         not crazy_pack_available
-    local playing_available = (Reverie.find_used_cine("Poker Face") or not is_forcing_card_set) and
+    local playing_available = (Reverie.find_used_cine("Poker Face", "Gem Heist") or not is_forcing_card_set) and
         not crazy_pack_available
     local spectral_available = (Reverie.find_used_cine("Eerie Inn") or not is_forcing_card_set) and
         not crazy_pack_available
