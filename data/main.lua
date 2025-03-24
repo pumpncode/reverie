@@ -1803,7 +1803,7 @@ function Card:calculate_joker(context)
             elseif self.config.center.key == "j_olab_fine_wine" and context.setting_blind and not context.getting_sliced and not context.blueprint then
                 self.ability.extra.discards = self.ability.extra.discards + 1
             elseif self.config.center.key == "j_mf_goldencarrot" and context.after and context.cardarea == G.jokers and not context.blueprint then
-                if not self.gone and self.ability.extra - 1 > 0 then
+                if not self.gone and type(self.ability.extra) == "number" and self.ability.extra - 1 > 0 then
                     self.ability.extra = self.ability.extra - 1
                 end
             elseif self.config.center.key == "j_bunc_fondue" and context.after and G.GAME.current_round.hands_played == 1 and context.scoring_hand and not context.blueprint then
