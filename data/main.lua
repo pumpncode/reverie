@@ -1089,6 +1089,9 @@ function CardArea:emplace(card, location, stay_flipped)
             local new_card = Reverie.create_booster(self, G.P_CENTERS.p_dvrprv_crazy_lucky_1)
             if new_card then
                 emplace_ref(self, new_card, location, stay_flipped)
+            else
+                -- Log an error or handle the case where new_card is nil
+                print("Error: Failed to create a new card for Crazy Lucky cine.")
             end
             return
         end
@@ -1766,7 +1769,7 @@ function Card:calculate_joker(context)
                 and G.GAME.chips >= G.GAME.blind.chips * self.ability.extra.chips)
             or (self.config.center.reward == "c_dvrprv_unseen" and context.end_of_round and not context.individual and not context.repetition
                 and G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer) >= self.ability.extra.slots)
-            or (self.config.center.reward == "c_dvrprv_crazy_lucky" and context.open_booster)
+            or (self.config.center.reward== "c_dvrprv_crazy_lucky" and context.open_booster)
             or (self.config.center.reward == "c_dvrprv_tag_or_die" and context.skip_blind)
             or (self.config.center.reward == "c_dvrprv_let_it_moon" and context.using_consumeable
                 and (context.consumeable.ability.set == "Tarot" or context.consumeable.ability.set == "Planet"))
