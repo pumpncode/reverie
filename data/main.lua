@@ -1081,13 +1081,16 @@ function CardArea:emplace(card, location, stay_flipped)
                 card.pinch.x = false
             end
         elseif Reverie.find_used_cine("Crazy Lucky") and self == G.shop_booster and card.config.center.kind ~= "Crazy" then
-            local c = self:remove_card(self)
-            c:remove()
-
-            card = Reverie.create_booster(self, G.P_CENTERS.p_dvrprv_crazy_lucky_1)
-            if card then
-                emplace_ref(self, card, location, stay_flipped)
+            local c = self:remove_card(card)
+            if c then
+                c:remove()
             end
+
+            local new_card = Reverie.create_booster(self, G.P_CENTERS.p_dvrprv_crazy_lucky_1)
+            if new_card then
+                emplace_ref(self, new_card, location, stay_flipped)
+            end
+            return
         end
     end
 end
