@@ -14,7 +14,20 @@ Reverie.flipped_booster_pos = {
     y = 0
 }
 
-SMODS.current_mod.config_tab = function ()
+function G.FUNCS.reverie_unlock_all()
+    local keys = {
+        "b_dvrprv_filmstrip",
+        "b_dvrprv_stamp",
+        "v_dvrprv_megaphone",
+    }
+
+    for _, key in ipairs(keys) do
+        local card = G.P_CENTERS[key]
+        unlock_card(card)
+    end
+end
+
+SMODS.current_mod.config_tab = function()
     local jokerDisplay = Reverie.find_mod("JokerDisplay")
     local cartomancer = Reverie.find_mod("cartomancer")
 
@@ -36,7 +49,7 @@ SMODS.current_mod.config_tab = function ()
                     {
                         n = G.UIT.T,
                         config = {
-                            text = localize("k_dvrprv_title").." v"..Reverie.version,
+                            text = localize("k_dvrprv_title") .. " v" .. Reverie.version,
                             scale = 0.7,
                             colour = Reverie.badge_colour
                         }
@@ -67,14 +80,14 @@ SMODS.current_mod.config_tab = function ()
             },
             {
                 n = G.UIT.R,
-                config = {align = "cm"},
+                config = { align = "cm" },
                 nodes = {
                     {
-                        n=G.UIT.O,
+                        n = G.UIT.O,
                         config = {
                             object = DynaText({
-                                string = {"......................................"},
-                                colours = {G.C.WHITE},
+                                string = { "......................................" },
+                                colours = { G.C.WHITE },
                                 shadow = true,
                                 float = true,
                                 y_offset = -30,
@@ -99,6 +112,10 @@ SMODS.current_mod.config_tab = function ()
                             minw = 3
                         },
                         nodes = {
+                            UIBox_button({
+                                label = { "Unlock Reverie Cards" },
+                                button = 'reverie_unlock_all'
+                            }),
                             create_toggle({
                                 label = localize("b_dvrprv_tag_packs_shop"),
                                 info = localize("b_dvrprv_tag_packs_shop_info"),
@@ -220,7 +237,8 @@ function Reverie.end_cine_shop()
 
     if G.GAME.current_round.cine_temporary_consumeable_limit then
         G.GAME.current_round.cine_temporary_consumeable_limit = nil
-        G.consumeables.config.card_limit = G.consumeables.config.card_limit - G.P_CENTERS.c_dvrprv_alchemist.config.extra.slot
+        G.consumeables.config.card_limit = G.consumeables.config.card_limit -
+            G.P_CENTERS.c_dvrprv_alchemist.config.extra.slot
     end
 
     if G.GAME.current_round.cine_temporary_shop_card_limit then
@@ -234,31 +252,51 @@ function Reverie.end_cine_shop()
     Reverie.set_cine_banned_keys()
 end
 
-function Reverie.create_tag_as_card(area, big, excludes)
-    local _pool, _pool_key = get_current_pool("Tag", nil, nil, nil)
+function Reverie.create_tag_as_card(area, big)
+    local _pool, _pool_key = get_current_pool("Tag")
+
+    --cull the pool manually, because Vanilla doesn't do it for tags normally (as it should)
+    for k, v in ipairs(_pool) do
+        if v ~= "UNAVAILABLE" and G.GAME.used_jokers[v] then
+            _pool[k] = "UNAVAILABLE"
+        end
+    end
+
     local key = pseudorandom_element(_pool, pseudoseed(_pool_key))
     local it = 1
 
-    while key == "UNAVAILABLE" or (excludes and get_index(excludes, key)) do
+    while key == "UNAVAILABLE" do
         it = it + 1
-        key = pseudorandom_element(_pool, pseudoseed(_pool_key.."_resample"..it))
+        key = pseudorandom_element(_pool, pseudoseed(_pool_key .. "_resample" .. it))
+        if it > 100 then
+            key = "tag_handy" -- default tag when all tags are used
+        end
     end
 
     local center = G.P_TAGS[key]
+    center.atlas = center.atlas or "tags"
     local size = big and 1.2 or 0.8
 
-    local card = Card(area.T.x + area.T.w/2, area.T.y, size, size, nil, center, {
+    local card = Card(area.T.x + area.T.w / 2, area.T.y, size, size, nil, center, {
         bypass_discovery_center = area == G.shop_jokers,
         bypass_discovery_ui = area == G.shop_jokers,
         discover = false,
         bypass_back = G.GAME.selected_back.pos
     })
     card.config.center_key = key
-    card.ability.tag = Tag(key)
+    card.ability.tag = Tag(key, false, "Small")
     card.ability.tag.ability.as_card = true
+
+    -- card.ability.tag:set_ability()
+
+    for k, v in pairs(card.ability.tag.ability) do
+        card.ability[k] = v
+    end
+
     card.base_cost = G.P_CENTERS.c_dvrprv_tag_or_die.config.extra.cost
     card:set_cost()
 
+    -- Prevents orbital tag from always being the same hand
     if card.ability.name == "Orbital Tag" then
         local poker_hands = {}
         for k, v in pairs(G.GAME.hands) do
@@ -269,6 +307,23 @@ function Reverie.create_tag_as_card(area, big, excludes)
 
         card.ability.orbital_hand = pseudorandom_element(poker_hands, pseudoseed("orbital"))
         card.ability.tag.ability.orbital_hand = card.ability.orbital_hand
+    end
+
+    -- Ortalab compat to prevent Constellation patch from always being the same hand
+    if Reverie.find_mod("ortalab") and card.ability.name == "tag_ortalab_constellation" then
+        local _poker_hands = {}
+        for k, _ in pairs(G.ZODIACS) do
+            _poker_hands[#_poker_hands+1] = k
+        end
+
+        local zodiac1 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
+        local zodiac2 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
+        while zodiac1 == zodiac2 do
+            zodiac2 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
+        end
+
+        card.ability.zodiac_hands = {zodiac1, zodiac2}
+        card.ability.tag.ability.zodiac_hands = card.ability.zodiac_hands
     end
 
     return card
@@ -284,7 +339,7 @@ function Reverie.create_booster(area, center)
     return card
 end
 
-function Reverie.create_crazy_random_card(area, excludes)
+function Reverie.create_crazy_random_card(area)
     local cumulative, pointer, target, card = 0, 0, nil, nil
     local tag_or_die = Reverie.find_used_cine("Tag or Die")
     local weights = {}
@@ -297,7 +352,7 @@ function Reverie.create_crazy_random_card(area, excludes)
         cumulative = cumulative + v
     end
 
-    local poll = pseudorandom(pseudoseed("crazy_pack"..G.GAME.round_resets.ante)) * cumulative
+    local poll = pseudorandom(pseudoseed("crazy_pack" .. G.GAME.round_resets.ante)) * cumulative
 
     for k, v in pairs(weights) do
         pointer = pointer + v
@@ -340,7 +395,7 @@ function Reverie.create_crazy_random_card(area, excludes)
 
             while center == "UNAVAILABLE" or (G.P_CENTERS[center].set == "Cine" and not G.P_CENTERS[center].reward) do
                 it = it + 1
-                center = pseudorandom_element(pool, pseudoseed(pool_key.."_resample"..it))
+                center = pseudorandom_element(pool, pseudoseed(pool_key .. "_resample" .. it))
             end
 
             card = create_card(target, area, nil, nil, true, true, center, "crazy_c")
@@ -353,16 +408,18 @@ function Reverie.create_crazy_random_card(area, excludes)
         if Reverie.find_used_cine("Poker Face") then
             card = Reverie.create_poker_face_card(G.pack_cards)
         else
-            card = create_card((pseudorandom(pseudoseed("crazy_playing"..G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base", G.pack_cards, nil, nil, nil, true, nil, "crazy_p")
+            card = create_card(
+                (pseudorandom(pseudoseed("crazy_playing" .. G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base",
+                G.pack_cards, nil, nil, nil, true, nil, "crazy_p")
             local edition_rate = 2
-            local edition = poll_edition("crazy_edition"..G.GAME.round_resets.ante, edition_rate, true)
+            local edition = poll_edition("crazy_edition" .. G.GAME.round_resets.ante, edition_rate, true)
             card:set_edition(edition)
 
             local seal_rate = 10
-            local seal_poll = pseudorandom(pseudoseed("crazy_seal"..G.GAME.round_resets.ante))
+            local seal_poll = pseudorandom(pseudoseed("crazy_seal" .. G.GAME.round_resets.ante))
 
-            if seal_poll > 1 - 0.02*seal_rate then
-                local seal_type = pseudorandom(pseudoseed("crazy_sealtype"..G.GAME.round_resets.ante))
+            if seal_poll > 1 - 0.02 * seal_rate then
+                local seal_type = pseudorandom(pseudoseed("crazy_sealtype" .. G.GAME.round_resets.ante))
 
                 if seal_type > 0.75 then
                     card:set_seal("Red")
@@ -376,7 +433,7 @@ function Reverie.create_crazy_random_card(area, excludes)
             end
         end
     elseif target == "Tag" then
-        card = Reverie.create_tag_as_card(area, true, excludes)
+        card = Reverie.create_tag_as_card(area, true)
     end
 
     if not card then
@@ -399,7 +456,7 @@ function Reverie.create_special_joker(area)
     if Reverie.find_used_cine("Radioactive") then
         table.insert(cine_joker_types, "Radioactive")
     end
-    if Reverie.find_used_cine("Jovial M")then
+    if Reverie.find_used_cine("Jovial M") then
         table.insert(cine_joker_types, "Jovial M")
     end
 
@@ -409,11 +466,9 @@ function Reverie.create_special_joker(area)
         if type == "Morsel" then
             local available = Reverie.get_food_jokers()
 
-            if not next(find_joker("Showman")) then
-                for i, v in ipairs(available) do
-                    if next(find_joker(G.P_CENTERS[v].name)) then
-                        available[i] = nil
-                    end
+            for i, key in ipairs(available) do
+                if (G.GAME.used_jokers[key] and not next(find_joker("Showman"))) then
+                    available[i] = nil
                 end
             end
 
@@ -422,10 +477,12 @@ function Reverie.create_special_joker(area)
             end
 
             local target = pseudorandom_element(available, pseudoseed("mor"))
-            card = create_card("Joker", area, nil, nil, nil, nil, target, "sel")
+            card = { set = "Joker", area = area, key = target, key_append = "sel" }
+            -- card = create_card("Joker", area, nil, nil, nil, nil, target, "sel")
         elseif type == "I Sing, I've No Shape" then
             local force = pseudorandom_element(G.jokers.cards, pseudoseed("ising"))
-            card = create_card("Joker", area, nil, nil, nil, nil, force.config.center.key, "iveno")
+            card = { set = "Joker", area = area, key = force.config.center.key, key_append = "iveno" }
+            -- card = create_card("Joker", area, nil, nil, nil, nil, force.config.center.key, "iveno")
         elseif type == "Radioactive" then
             local available = Reverie.get_fusion_materials()
             local fallback = pseudorandom_element(available, pseudoseed("radio_fallback"))
@@ -443,21 +500,30 @@ function Reverie.create_special_joker(area)
             end
 
             local target = pseudorandom_element(available, pseudoseed("radio"))
-            card = create_card("Joker", area, nil, nil, nil, nil, target, "active")
+            card = { set = "Joker", area = area, key = target, key_append = "active" }
+            -- card = create_card("Joker", area, nil, nil, nil, nil, target, "active")
         elseif type == "Jovial M" then
-            card = create_card("Joker", area, nil, pseudorandom_element({
+            local rarity = pseudorandom_element({
                 "cry_epic",
                 "cry_exotic"
-            }, pseudoseed("jovial_rarity")), nil, nil, nil, "jovial")
+            }, pseudoseed("jovial_rarity"))
+            card = { set = "Joker", area = area, rarity = rarity, key_append = "jovial" }
+            -- card = create_card("Joker", area, nil, pseudorandom_element({
+            --     "cry_epic",
+            --     "cry_exotic"
+            -- }, pseudoseed("jovial_rarity")), nil, nil, nil, "jovial")
         end
     end
 
+    if card then
+        card = SMODS.create_card(card)
+    end
     return card
 end
 
 function Reverie.create_poker_face_card(area)
     local target = pseudorandom_element(G.deck.cards, pseudoseed("pokerface"))
-    local c = Card(area.T.x + area.T.w/2, area.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS.c_base)
+    local c = Card(area.T.x + area.T.w / 2, area.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS.c_base)
 
     return copy_card(target, c)
 end
@@ -479,18 +545,16 @@ function Reverie.get_food_jokers()
         "j_mf_teacup",
         "j_cafeg",
         "j_cherry",
-        G.GAME.pool_flags.taliaferro_extinct and "j_olab_royal_gala" or "j_olab_taliaferro",
-        "j_olab_fine_wine",
-        "j_olab_mystery_soda",
-        "j_olab_popcorn_bag",
+        G.GAME.pool_flags.taliaferro_extinct and "j_ortalab_royal_gala" or "j_ortalab_taliaferro",
+        "j_ortalab_fine_wine",
+        "j_ortalab_mystery_soda",
+        "j_ortalab_popcorn_bag",
         "j_cry_pickle",
         "j_cry_chili_pepper",
         "j_cry_oldcandy",
         "j_cry_caramel",
         "j_cry_foodm",
         "j_cry_crustulum",
-        "j_bunc_fondue",
-        "j_bunc_starfruit",
         "j_evo_full_sugar_cola",
         "j_kcva_fortunecookie",
         "j_kcva_swiss",
@@ -499,14 +563,34 @@ function Reverie.get_food_jokers()
         "j_snow_turkey_dinner",
         "j_ssj_coffee",
         "j_jank_cut_the_cheese",
-        "j_pape_soft_taco",
-        "j_pape_crispy_taco",
-        "j_pape_nachos",
-        "j_pape_ghost_cola",
+        G.GAME.pool_flags.soft_taco_can_spawn and "j_paperback_soft_taco" or "j_paperback_crispy_taco",
+        "j_paperback_nachos",
+        "j_paperback_complete_breakfast",
+        "j_paperback_ghost_cola",
+        "j_paperback_joker_cookie",
+        "j_paperback_cakepop",
+        "j_paperback_caramel_apple",
+        "j_paperback_charred_marshmallow",
+        "j_paperback_dreamsicle",
+        "j_paperback_apple",
+        "j_paperback_coffee",
+        "j_paperback_cream_liqueur",
+        "j_paperback_epic_sauce",
+        "j_paperback_champagne",
         "j_twewy_candleService",
         "j_twewy_burningCherry",
-        "j_twewy_burningMelon"
+        "j_twewy_burningMelon",
+        "j_cosmos_milkandcookies",
+        "j_kcvanilla_fortunecookie",
+        "j_neat_frostedprimerib",
+        G.GAME.pool_flags.gfondue_licked and "j_buf_camarosa" or "j_buf_gfondue"
     }
+
+    -- Bunco exotic suit jokers
+    if G.GAME and G.GAME.Exotic then
+        table.insert(foods, "j_bunc_starfruit")
+        table.insert(foods, "j_bunc_fondue")
+    end
 
     for _, v in pairs(foods) do
         if G.P_CENTERS[v] then
@@ -540,26 +624,32 @@ function Reverie.double_ability(origin, new)
 end
 
 function Reverie.morselize_UI(card)
-    local alternative = G.localization.descriptions.Joker[card.config.center_key.."_morsel_alternative"]
+    local alternative = G.localization.descriptions.Joker[card.config.center_key .. "_morsel_alternative"]
     if alternative and (Reverie.config.custom_morsel_compat or card.config.center.key == "j_diet_cola") then
         local temp_main = {}
         local loc_vars = {}
 
         if card.config.center.key == "j_olab_fine_wine" then
-            loc_vars = {card.ability.extra.discards}
+            loc_vars = { card.ability.extra.discards }
         elseif card.config.center.key == "j_mf_goldencarrot" then
-            loc_vars = {nil, 2}
+            loc_vars = { nil, 2 }
         elseif card.config.center.key == "j_pape_ghost_cola" then
-            loc_vars = {localize{
+            loc_vars = { localize {
                 type = "name_text",
                 set = "Tag",
                 key = "tag_negative"
-            }}
+            } }
+        elseif card.config.center.key == "j_diet_cola" then
+            loc_vars = { localize {
+                type = "name_text",
+                set = "Tag",
+                key = "tag_double"
+            } }
         end
 
-        localize{
+        localize {
             type = "descriptions",
-            key = card.config.center_key.."_morsel_alternative",
+            key = card.config.center_key .. "_morsel_alternative",
             set = card.ability.set,
             nodes = temp_main,
             vars = loc_vars
@@ -575,12 +665,12 @@ function Reverie.morselize_UI(card)
     table.insert(card.ability_UIBox_table.badges, "morseled")
     table.insert(card.ability_UIBox_table.info, {})
     local last_info = card.ability_UIBox_table.info[#card.ability_UIBox_table.info]
-    localize{
+    localize {
         type = "other",
         key = "morseled",
         nodes = last_info
     }
-    last_info.name = localize{
+    last_info.name = localize {
         type = 'name_text',
         key = "morseled",
         set = "Other"
@@ -614,7 +704,7 @@ function Reverie.find_used_cine_or(...)
         return false
     end
 
-    local names = {...}
+    local names = { ... }
 
     for _, v in ipairs(names) do
         if get_index(G.GAME.current_round.used_cine, v) then
@@ -630,7 +720,7 @@ function Reverie.find_used_cine_all(...)
         return false
     end
 
-    local names = {...}
+    local names = { ... }
 
     for _, v in ipairs(names) do
         if not get_index(G.GAME.current_round.used_cine, v) then
@@ -643,7 +733,7 @@ end
 
 function Reverie.is_cine_forcing_card_set()
     return Reverie.find_used_cine_or("I Sing, I've No Shape", "Crazy Lucky", "Tag or Die", "Let It Moon",
-        "Poker Face", "Eerie Inn", "Morsel", "Fool Metal Alchemist", "Every Hue", "Radioactive", "Jovial M")
+        "Poker Face", "Eerie Inn", "Morsel", "Gem Heist", "Fool Metal Alchemist", "Every Hue", "Radioactive", "Jovial M")
 end
 
 function Reverie.get_used_cine_kinds()
@@ -729,9 +819,9 @@ function Reverie.create_card_for_cine_shop(area)
             if forced_tag and Reverie.find_used_cine("Adrifting") and #G.GAME.current_round.used_cine == 1 then
                 for _, vv in ipairs(G.GAME.tags) do
                     if vv:apply_to_run({
-                        type = "store_joker_modify",
-                        card = forced_tag
-                    }) then
+                            type = "store_joker_modify",
+                            card = forced_tag
+                        }) then
                         break
                     end
                 end
@@ -741,15 +831,19 @@ function Reverie.create_card_for_cine_shop(area)
         end
     end
 
-    local has_oddity = Reverie.find_mod("TheAutumnCircus")
+    local has_oddity = Reverie.find_mod("TheAutumnCircus") and OddityAPI
     local has_alchemical = Reverie.find_mod("CodexArcanum")
     local has_colour = Reverie.find_mod("MoreFluff")
 
     local crazy_pack_available = Reverie.find_used_cine("Crazy Lucky")
-    local joker_available = (Reverie.find_used_cine_or("I Sing, I've No Shape", "Morsel", "Radioactive", "Jovial M") or not is_forcing_card_set) and not crazy_pack_available
-    local planet_or_tarot_available = (Reverie.find_used_cine("Let It Moon") or not is_forcing_card_set) and not crazy_pack_available
-    local playing_available = (Reverie.find_used_cine("Poker Face") or not is_forcing_card_set) and not crazy_pack_available
-    local spectral_available = (Reverie.find_used_cine("Eerie Inn") or not is_forcing_card_set) and not crazy_pack_available
+    local joker_available = (Reverie.find_used_cine_or("I Sing, I've No Shape", "Morsel", "Gem Heist", "Radioactive", "Jovial M") or (not Reverie.find_mod("Bunco") and Reverie.find_used_cine("Gem Heist")) or not is_forcing_card_set) and
+        not crazy_pack_available
+    local planet_or_tarot_available = (Reverie.find_used_cine("Let It Moon") or not is_forcing_card_set) and
+        not crazy_pack_available
+    local playing_available = (Reverie.find_used_cine("Poker Face") or (not Reverie.find_mod("Bunco") and Reverie.find_used_cine("Gem Heist")) or not is_forcing_card_set) and
+        not crazy_pack_available
+    local spectral_available = (Reverie.find_used_cine("Eerie Inn") or not is_forcing_card_set) and
+        not crazy_pack_available
     local tag_available = Reverie.find_used_cine("Tag or Die") and not crazy_pack_available
     local oddity_available, alchemical_available, colour_available = nil, nil, nil
 
@@ -763,70 +857,76 @@ function Reverie.create_card_for_cine_shop(area)
         + (tag_available and G.GAME.joker_rate or 0)
         + (crazy_pack_available and G.GAME.joker_rate or 0)
     local candidates = {
-        {type = "Joker", val = joker_available and G.GAME.joker_rate or 0, available = joker_available},
-        {type = "Tarot", val = planet_or_tarot_available and G.GAME.tarot_rate or 0, available = planet_or_tarot_available},
-        {type = "Planet", val = planet_or_tarot_available and G.GAME.planet_rate or 0, available = planet_or_tarot_available},
+        { type = "Joker",  val = joker_available and G.GAME.joker_rate or 0,            available = joker_available },
+        { type = "Tarot",  val = planet_or_tarot_available and G.GAME.tarot_rate or 0,  available = planet_or_tarot_available },
+        { type = "Planet", val = planet_or_tarot_available and G.GAME.planet_rate or 0, available = planet_or_tarot_available },
         {
             type = (G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed("illusion")) > 0.6) and "Enhanced" or
                 "Base",
-            val = playing_available and playing_card_rate or 0, available = playing_available
+            val = playing_available and playing_card_rate or 0,
+            available = playing_available
         },
-        {type = "Spectral", val = spectral_available and spectral_rate or 0, available = spectral_available},
-        {type = "Tag", val = tag_available and G.GAME.joker_rate or 0, available = tag_available},
-        {type = "Crazy", val = crazy_pack_available and G.GAME.joker_rate or 0, available = crazy_pack_available},
+        { type = "Spectral", val = spectral_available and spectral_rate or 0,       available = spectral_available },
+        { type = "Tag",      val = tag_available and G.GAME.joker_rate or 0,        available = tag_available },
+        { type = "Crazy",    val = crazy_pack_available and G.GAME.joker_rate or 0, available = crazy_pack_available },
     }
 
     if has_oddity then
-        oddity_rate = G.GAME.oddity_rate > 0 and G.GAME.oddity_rate or G.GAME.cached_oddity_rate or 0
+        oddity_rate = (G.GAME.oddity_rate or 0) > 0 and G.GAME.oddity_rate or G.GAME.cached_oddity_rate or 0
         oddity_available = not is_forcing_card_set and not crazy_pack_available
         total_rate = total_rate + (oddity_available and oddity_rate or 0)
-        table.insert(candidates, {type = "Oddity", val = oddity_available and oddity_rate or 0, available = oddity_available})
+        table.insert(candidates,
+            { type = "Oddity", val = oddity_available and oddity_rate or 0, available = oddity_available })
     end
 
     if has_alchemical then
-        alchemical_rate = Reverie.find_used_cine_or("Fool Metal Alchemist") and G.GAME.joker_rate or G.GAME.alchemical_rate or G.GAME.cached_alchemical_rate or 0
-        alchemical_available = (Reverie.find_used_cine_or("Fool Metal Alchemist") or not is_forcing_card_set) and not crazy_pack_available
+        alchemical_rate = Reverie.find_used_cine_or("Fool Metal Alchemist") and G.GAME.joker_rate or
+            G.GAME.alchemical_rate or G.GAME.cached_alchemical_rate or 0
+        alchemical_available = (Reverie.find_used_cine_or("Fool Metal Alchemist") or not is_forcing_card_set) and
+            not crazy_pack_available
         total_rate = total_rate + (alchemical_available and alchemical_rate or 0)
-        table.insert(candidates, {type = "Alchemical", val = alchemical_available and alchemical_rate or 0, available = alchemical_available})
+        table.insert(candidates,
+            { type = "Alchemical", val = alchemical_available and alchemical_rate or 0, available = alchemical_available })
     end
 
     if has_colour then
         colour_rate = Reverie.find_used_cine("Every Hue") and G.GAME.joker_rate or 0
         colour_available = Reverie.find_used_cine("Every Hue") and not crazy_pack_available
         total_rate = total_rate + (colour_available and colour_rate or 0)
-        table.insert(candidates, {type = "Colour", val = colour_available and colour_rate or 0, available = colour_available})
+        table.insert(candidates,
+            { type = "Colour", val = colour_available and colour_rate or 0, available = colour_available })
     end
 
     local polled_rate = pseudorandom(pseudoseed("cdt" .. G.GAME.round_resets.ante)) * total_rate
     local check_rate = 0
 
-    print("Joker Available: "..tostring(joker_available).." ("..(joker_available and G.GAME.joker_rate or 0)..")")
-    print("Planet or Tarot Available: "..tostring(planet_or_tarot_available).." ("..(planet_or_tarot_available and G.GAME.tarot_rate + G.GAME.planet_rate or 0)..")")
-    print("Playing Available: "..tostring(playing_available).." ("..(playing_available and playing_card_rate or 0)..")")
-    print("Spectral Available: "..tostring(spectral_available).." ("..(spectral_available and spectral_rate or 0)..")")
-    print("Tag Available: "..tostring(tag_available).." ("..(tag_available and G.GAME.joker_rate or 0)..")")
-    print("Crazy Pack Available: "..tostring(crazy_pack_available).." ("..(crazy_pack_available and G.GAME.joker_rate or 0)..")")
+    -- sendDebugMessage("Joker Available: "..tostring(joker_available).." ("..(joker_available and G.GAME.joker_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Planet or Tarot Available: "..tostring(planet_or_tarot_available).." ("..(planet_or_tarot_available and G.GAME.tarot_rate + G.GAME.planet_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Playing Available: "..tostring(playing_available).." ("..(playing_available and playing_card_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Spectral Available: "..tostring(spectral_available).." ("..(spectral_available and spectral_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Tag Available: "..tostring(tag_available).." ("..(tag_available and G.GAME.joker_rate or 0)..")", "ReverieDebugLogger")
+    -- sendDebugMessage("Crazy Pack Available: "..tostring(crazy_pack_available).." ("..(crazy_pack_available and G.GAME.joker_rate or 0)..")", "ReverieDebugLogger")
 
-    if has_oddity then
-        print("Oddity Available: "..tostring(oddity_available).." ("..(oddity_available and oddity_rate or 0)..")")
-    end
+    -- if has_oddity then
+    --     sendDebugMessage("Oddity Available: "..tostring(oddity_available).." ("..(oddity_available and oddity_rate or 0)..")", "ReverieDebugLogger")
+    -- end
 
-    if has_alchemical then
-        print("Alchemical Available: "..tostring(alchemical_available).." ("..(alchemical_available and alchemical_rate or 0)..")")
-    end
+    -- if has_alchemical then
+    --     sendDebugMessage("Alchemical Available: "..tostring(alchemical_available).." ("..(alchemical_available and alchemical_rate or 0)..")", "ReverieDebugLogger")
+    -- end
 
-    if has_colour then
-        print("Colour Available: "..tostring(colour_available).." ("..(colour_available and colour_rate or 0)..")")
-    end
+    -- if has_colour then
+    --     sendDebugMessage("Colour Available: "..tostring(colour_available).." ("..(colour_available and colour_rate or 0)..")", "ReverieDebugLogger")
+    -- end
 
-    print("Total Rate: "..total_rate..", Polled Rate: "..polled_rate)
+    -- sendDebugMessage("Total Rate: "..total_rate..", Polled Rate: "..polled_rate, "ReverieDebugLogger")
 
     for _, v in ipairs(candidates) do
-        print("Checking: "..v.type..", Available: "..tostring(v.available)..", Polled Rate("..polled_rate..
-            ") <= Check Rate("..check_rate..") + Val("..v.val..") = ("..check_rate + v.val..")")
+        -- sendDebugMessage("Checking: "..v.type..", Available: "..tostring(v.available)..", Polled Rate("..polled_rate..
+        --     ") <= Check Rate("..check_rate..") + Val("..v.val..") = ("..check_rate + v.val..")", "ReverieDebugLogger")
 
         if v.available and polled_rate > check_rate and polled_rate <= check_rate + v.val then
-            print(v.type.." selected")
+            -- sendDebugMessage(v.type.." selected", "ReverieDebugLogger")
 
             local card = nil
 
@@ -839,7 +939,7 @@ function Reverie.create_card_for_cine_shop(area)
                 local grade = poll >= 0.95 and "mega" or poll >= 0.75 and "jumbo" or "normal"
                 local index = grade == "normal" and math.random(1, 2) or 1
 
-                card = Reverie.create_booster(area, G.P_CENTERS["p_spectral_"..grade.."_"..index])
+                card = Reverie.create_booster(area, G.P_CENTERS["p_spectral_" .. grade .. "_" .. index])
             elseif v.type == "Tag" then
                 card = Reverie.create_tag_as_card(area)
             elseif v.type == "Crazy" then
@@ -857,9 +957,9 @@ function Reverie.create_card_for_cine_shop(area)
                     func = function()
                         for _, vv in ipairs(G.GAME.tags) do
                             if vv:apply_to_run({
-                                type = "store_joker_modify",
-                                card = card
-                            }) then
+                                    type = "store_joker_modify",
+                                    card = card
+                                }) then
                                 break
                             end
                         end
@@ -870,8 +970,8 @@ function Reverie.create_card_for_cine_shop(area)
             end
 
             if not Reverie.find_used_cine("Gem Heist") and (not Reverie.find_used_cine("Poker Face") or not card.edition)
-            and (v.type == "Base" or v.type == "Enhanced") and G.GAME.used_vouchers.v_illusion
-            and pseudorandom(pseudoseed("illusion")) > 0.8 then
+                and (v.type == "Base" or v.type == "Enhanced") and G.GAME.used_vouchers.v_illusion
+                and pseudorandom(pseudoseed("illusion")) > 0.8 then
                 local edition_poll = pseudorandom(pseudoseed("illusion"))
                 local edition = {}
                 if edition_poll > 1 - 0.15 then
@@ -913,9 +1013,10 @@ function CardArea:emplace(card, location, stay_flipped)
     if self == G.shop_jokers or self == G.shop_vouchers or self == G.shop_booster or self == G.pack_cards then
         local unseen, heist = Reverie.find_used_cine("The Unseen"), Reverie.find_used_cine("Gem Heist")
         local is_dx_tarot_planet = Reverie.find_mod("JeffDeluxeConsumablesPack") and card.ability.set == "Planet"
+        local is_bunco_consumable = Reverie.find_mod("Bunco") and card.ability.consumeable
         local editions = {}
 
-        if heist and (card.ability.set == "Joker" or is_dx_tarot_planet or card.ability.set == "Default" or card.ability.set == "Enhanced") then
+        if heist and (card.ability.set == "Joker" or is_dx_tarot_planet or is_bunco_consumable or card.ability.set == "Default" or card.ability.set == "Enhanced") then
             table.insert(editions, "polychrome")
         end
         if unseen and (card.ability.set == "Joker" or card.ability.consumeable) then
@@ -928,7 +1029,7 @@ function CardArea:emplace(card, location, stay_flipped)
                 [edition] = true
             })
         elseif card.ability.set == "Cine" and card.ability.progress and G.GAME.selected_sleeve
-        and G.GAME.selected_sleeve == "sleeve_dvrprv_filmstrip" and G.GAME.selected_back.name == "Filmstrip Deck" then
+            and G.GAME.selected_sleeve == "sleeve_dvrprv_filmstrip" and G.GAME.selected_back.name == "Filmstrip Deck" then
             local odds = CardSleeves.Sleeve:get_obj(G.GAME.selected_sleeve).config.odds
 
             if pseudorandom("filmstrip_sleeve") < G.GAME.probabilities.normal / odds then
@@ -936,10 +1037,10 @@ function CardArea:emplace(card, location, stay_flipped)
             end
         end
 
-        if heist then
-            card.cost = math.max(1, math.floor(card.cost * (100 - G.P_CENTERS.c_dvrprv_gem_heist.config.extra) / 100))
-            card.sell_cost = math.max(1, math.floor(card.cost / 2)) + (card.ability.extra_value or 0)
-        end
+        -- if heist then
+        --     card.cost = math.max(1, math.floor(card.cost * (100 - G.P_CENTERS.c_dvrprv_gem_heist.config.extra.discount) / 100))
+        --     card.sell_cost = math.max(1, math.floor(card.cost / 2)) + (card.ability.extra_value or 0)
+        -- end
 
         if Reverie.find_used_cine("Morsel") and Reverie.is_food_joker(card.config.center.key) then
             card.ability.morseled = true
@@ -957,12 +1058,28 @@ function CardArea:emplace(card, location, stay_flipped)
             end
         end
 
+        for _, v in ipairs(G.GAME.current_round.used_cine or {}) do
+            local center = Reverie.find_cine_center(v)
+    
+            if center and type(center.config.extra) == "table" and center.config.extra.set_price then
+                card.cost = center.config.extra.set_price
+                card.sell_cost = math.floor(center.config.extra.set_price / 2)
+            end
+            if center and type(center.config.extra) == "table" and center.config.extra.discount then
+                card.cost = math.max(1, math.floor(card.cost * (100 - center.config.extra.discount) / 100))
+                card.sell_cost = math.max(1, math.floor(card.cost / 2)) + (card.ability.extra_value or 0)
+            end
+        end
+
         if Reverie.find_used_cine("Adrifting") and self ~= G.pack_cards then
-            card.cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
-            card.sell_cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
-            card.facing = "back"
-            card.sprite_facing = "back"
-            card.pinch.x = false
+            -- card.cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
+            -- card.sell_cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
+            -- Slight Bunco synergy, Fluorescent cards will be visible with Adrifting
+            if not (card.edition and card.edition.bunc_fluorescent) then
+                card.facing = "back"
+                card.sprite_facing = "back"
+                card.pinch.x = false
+            end
         elseif Reverie.find_used_cine("Crazy Lucky") and self == G.shop_booster and card.config.center.kind ~= "Crazy" then
             local c = self:remove_card(card)
             c:remove()
@@ -985,9 +1102,9 @@ function Reverie.calculate_reroll_cost()
         local center = Reverie.find_cine_center(v)
 
         if center and type(center.config.extra) == "table" then
-
             if center.config.extra.mult then
-                G.GAME.current_round.reroll_cost = math.max(0, math.floor(G.GAME.current_round.reroll_cost * center.config.extra.mult))
+                G.GAME.current_round.reroll_cost = math.max(0,
+                    math.floor(G.GAME.current_round.reroll_cost * center.config.extra.mult))
             elseif center.config.extra.add then
                 add = add + center.config.extra.add
             end
@@ -1000,7 +1117,7 @@ end
 function Reverie.set_cine_banned_keys()
     for k, v in pairs(G.P_CENTERS) do
         if (v.yes_pool_flag == "Tag or Die" and G.GAME.selected_back.name ~= "" and not Reverie.config.tag_packs_shop)
-        or (v.yes_pool_flag == "Crazy Lucky" and not Reverie.config.crazy_packs_shop) then
+            or (v.yes_pool_flag == "Crazy Lucky" and not Reverie.config.crazy_packs_shop) then
             G.GAME.banned_keys[k] = not Reverie.find_used_cine(v.yes_pool_flag)
         end
     end
@@ -1043,7 +1160,7 @@ function Reverie.get_pack_by_slug(key, slug)
         end
     end
 
-    local poll = pseudorandom(pseudoseed((key or "pack_generic")..G.GAME.round_resets.ante)) * cume
+    local poll = pseudorandom(pseudoseed((key or "pack_generic") .. G.GAME.round_resets.ante)) * cume
 
     for _, v in ipairs(G.P_CENTER_POOLS.Booster) do
         if not G.GAME.banned_keys[v.key] then
@@ -1112,6 +1229,94 @@ function Reverie.use_cine(center, card, area, copier)
         G.GAME.current_round.used_cine = {}
     end
 
+    inc_career_stat('c_Reverie_cines_used', 1)
+    check_for_unlock({ type = 'career_stat', statname = 'c_Reverie_cines_used' })
+
+    local top_dynatext = nil
+    local bot_dynatext = nil
+    local torn_strip = nil
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = 0.4,
+        func = function()
+
+            card.no_shadow = true
+            card.reverie_custom_shadow = true
+            torn_strip = copy_card(card)
+            torn_strip.no_shadow = true
+            torn_strip.reverie_custom_shadow = true
+            torn_strip.omit_bottom_half = 1
+            card.omit_top_half = 1
+            torn_strip.T.y = torn_strip.T.y - 0.1
+            -- torn_strip.T.x = torn_strip.T.x + 0.1
+            -- torn_strip.T.r = torn_strip.T.r + 3.14 / 24 -- Rotates clockwise
+            G.play.T.y = G.play.T.y + 0.1
+            -- card.T.y = card.T.y + 0.25
+            -- G.play:emplace(torn_strip)
+
+
+            top_dynatext = DynaText({
+                string = localize('k_dvrprv_redeemed_cine'),
+                colours = { G.C.WHITE },
+                rotate = 1,
+                shadow = true,
+                bump = true,
+                float = true,
+                scale = 0.9,
+                pop_in = 0.6 /
+                    G.SPEEDFACTOR,
+                pop_in_rate = 1.5 * G.SPEEDFACTOR
+            })
+            bot_dynatext = DynaText({
+                string = localize { type = 'name_text', set = card.config.center.set, key = card.config.center.key },
+                colours = { is_reverie and lighten(G.C.RARITY[4], 0.5) or G.C.WHITE },
+                rotate = 2,
+                shadow = true,
+                bump = true,
+                float = true,
+                scale = 0.9,
+                pop_in = 1.4 /
+                    G.SPEEDFACTOR,
+                pop_in_rate = 1.5 * G.SPEEDFACTOR * (is_reverie and 0.5 or 1),
+                pitch_shift = 0.25
+            })
+            torn_strip:juice_up(0.3, 0.5)
+            card:juice_up(0.3, 0.5)
+            play_sound('card1')
+
+            card.children.top_disp = UIBox {
+                definition = { n = G.UIT.ROOT, config = { align = 'tm', r = 0.15, colour = G.C.CLEAR, padding = 0.15 }, nodes = {
+                    { n = G.UIT.O, config = { object = top_dynatext } }
+                } },
+                config = { align = "tm", offset = { x = 0, y = -0.3 }, parent = G.play }
+            }
+            card.children.bot_disp = UIBox {
+                definition = { n = G.UIT.ROOT, config = { align = 'tm', r = 0.15, colour = G.C.CLEAR, padding = 0.15 }, nodes = {
+                    { n = G.UIT.O, config = { object = bot_dynatext } }
+                } },
+                config = { align = "bm", offset = { x = 0, y = 0 }, parent = G.play }
+            }
+
+            if is_reverie and not G.booster_pack_meteors then
+                ease_background_colour_blind(G.STATES.SPECTRAL_PACK)
+                G.booster_pack_meteors = Particles(1, 1, 0, 0, {
+                    timer = 0.035,
+                    scale = 0.1,
+                    lifespan = 1.5,
+                    speed = 4,
+                    attach = G.ROOM_ATTACH,
+                    colours = { lighten(G.C.SECONDARY_SET.Cine, 0.2), G.C.WHITE },
+                    fill = true
+                })
+            end
+
+            return true
+        end
+    }))
+
+    delay(0.6)
+
     G.E_MANAGER:add_event(Event({
         trigger = "immediate",
         func = function()
@@ -1135,9 +1340,10 @@ function Reverie.use_cine(center, card, area, copier)
             Reverie.calculate_reroll_cost()
 
             if (is_reverie or card.ability.name == "Fool Metal Alchemist") and G.P_CENTERS.c_dvrprv_alchemist
-            and not G.GAME.current_round.cine_temporary_consumeable_limit then
+                and not G.GAME.current_round.cine_temporary_consumeable_limit then
                 G.GAME.current_round.cine_temporary_consumeable_limit = true
-                G.consumeables.config.card_limit = G.consumeables.config.card_limit + G.P_CENTERS.c_dvrprv_alchemist.config.extra.slot
+                G.consumeables.config.card_limit = G.consumeables.config.card_limit +
+                    G.P_CENTERS.c_dvrprv_alchemist.config.extra.slot
             end
 
             if G.GAME.used_vouchers.v_dvrprv_script and not G.GAME.current_round.cine_temporary_shop_card_limit then
@@ -1158,6 +1364,7 @@ function Reverie.use_cine(center, card, area, copier)
     G.E_MANAGER:add_event(Event({
         trigger = "immediate",
         func = function()
+            -- Manipulate Jokers
             for i = #G.shop_jokers.cards, 1, -1 do
                 local c = G.shop_jokers:remove_card(G.shop_jokers.cards[i])
                 c:remove()
@@ -1168,9 +1375,10 @@ function Reverie.use_cine(center, card, area, copier)
                 G.shop_jokers:emplace(Reverie.create_card_for_cine_shop(G.shop_jokers))
             end
 
+            -- Manipulate vouchers
             for _, v in ipairs(G.shop_vouchers.cards) do
                 if card.ability.name == "Adrifting" then
-                    v.cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra
+                    v.cost = G.P_CENTERS.c_dvrprv_adrifting.config.extra.set_price
                     v:flip()
                 elseif is_reverie or card.ability.name == "Crazy Lucky" then
                     local c = G.shop_vouchers:remove_card(v)
@@ -1183,6 +1391,7 @@ function Reverie.use_cine(center, card, area, copier)
 
             local kinds, kind = Reverie.get_used_cine_kinds(), nil
 
+            -- Manipulate boosters if needed
             if Reverie.find_used_cine("Adrifting") or kinds then
                 for i = #G.shop_booster.cards, 1, -1 do
                     local c = G.shop_booster:remove_card(G.shop_booster.cards[i])
@@ -1199,7 +1408,8 @@ function Reverie.use_cine(center, card, area, copier)
 
                     G.GAME.current_round.used_packs = {}
                     if not G.GAME.current_round.used_packs[i] then
-                        G.GAME.current_round.used_packs[i] = kind and Reverie.get_pack_by_slug("shop_pack", kind).key or get_pack("shop_pack").key
+                        G.GAME.current_round.used_packs[i] = kind and Reverie.get_pack_by_slug("shop_pack", kind).key or
+                            get_pack("shop_pack").key
                     end
 
                     if G.GAME.current_round.used_packs[i] ~= "USED" then
@@ -1215,24 +1425,66 @@ function Reverie.use_cine(center, card, area, copier)
             return true
         end
     }))
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = 2.6,
+        func = function()
+            top_dynatext:pop_out(4)
+            bot_dynatext:pop_out(4)
+            return true
+        end
+    }))
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = 0.5,
+        func = function()
+            card.children.top_disp:remove()
+            card.children.top_disp = nil
+            card.children.bot_disp:remove()
+            card.children.bot_disp = nil
+            return true
+        end
+    }))
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = 0.2,
+        blocking = false,
+        func = function()
+            if torn_strip then
+                torn_strip:start_dissolve()
+            end
+            return true
+        end
+    }))
+
+    G.E_MANAGER:add_event(Event({
+        trigger = 'after',
+        delay = 2,
+        blocking = false,
+        func = function()
+            if torn_strip then
+                G.play.T.y = G.play.T.y - 0.25
+            end
+            return true
+        end
+    }))
 end
 
-local card_open_ref = Card.open
+Card.card_open_reverie_ref = Card.open
 function Card:open()
     if self.ability.set == "Booster" and G.shop and G.booster_pack_meteors then
         G.booster_pack_meteors:fade(0)
     end
 
-    card_open_ref(self)
-
-    if Reverie.booster_excludes then
-        Reverie.booster_excludes = nil
-    end
+    self:card_open_reverie_ref()
 end
 
-local card_explode_ref = Card.explode
+Card.card_explode_reverie_ref = Card.explode
 function Card:explode(dissolve_colours, explode_time_fac)
-    card_explode_ref(self, dissolve_colours, explode_time_fac)
+    self:card_explode_reverie_ref(dissolve_colours, explode_time_fac)
 
     if G.cine_quests and self.ability.set == "Booster" then
         G.E_MANAGER:add_event(Event({
@@ -1250,18 +1502,18 @@ function Card:explode(dissolve_colours, explode_time_fac)
     end
 end
 
-local tag_apply_to_run_ref = Tag.apply_to_run
+Tag.tag_apply_to_run_reverie_ref = Tag.apply_to_run
 function Tag:apply_to_run(_context)
     if G.GAME.current_round.used_cine and _context.type == "new_blind_choice" then
         return
     end
 
-    return tag_apply_to_run_ref(self, _context)
+    return self:tag_apply_to_run_reverie_ref(_context)
 end
 
-local update_shop_ref = Game.update_shop
+Game.update_shop_reverie_ref = Game.update_shop
 function Game:update_shop(dt)
-    update_shop_ref(self, dt)
+    self:update_shop_reverie_ref(dt)
 
     if G.STATE_COMPLETE then
         for _, v in ipairs(G.GAME.tags) do
@@ -1279,7 +1531,7 @@ function Game:update_shop(dt)
             lifespan = 1.5,
             speed = 4,
             attach = G.ROOM_ATTACH,
-            colours = {lighten(G.C.SECONDARY_SET.Cine, 0.2), G.C.WHITE},
+            colours = { lighten(G.C.SECONDARY_SET.Cine, 0.2), G.C.WHITE },
             fill = true
         })
     end
@@ -1319,13 +1571,13 @@ function G.FUNCS.toggle_shop(e)
     }))
 end
 
-local check_use_ref = Card.check_use
+Card.check_use_reverie_ref = Card.check_use
 function Card:check_use()
     if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.name == "Pack" then
         return nil
     end
 
-    return check_use_ref(self)
+    return self:check_use_reverie_ref()
 end
 
 function G.FUNCS.can_select_crazy_card(e)
@@ -1333,13 +1585,13 @@ function G.FUNCS.can_select_crazy_card(e)
 
     -- Copy pasted from G.FUNCS.check_for_buy_space
     if e.config.ref_table.ability.set ~= "Voucher" and e.config.ref_table.ability.set ~= "Tag"
-    and e.config.ref_table.ability.set ~= "Enhanced" and e.config.ref_table.ability.set ~= "Default"
-    and not (e.config.ref_table.ability.set == "Joker" and #G.jokers.cards < G.jokers.config.card_limit +
-        ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0))
-    and not (e.config.ref_table.ability.consumeable and not is_cine and #G.consumeables.cards < G.consumeables.config.card_limit +
-        ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0))
-    and not (is_cine and #G.cine_quests.cards < G.cine_quests.config.card_limit +
-        ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0)) then
+        and e.config.ref_table.ability.set ~= "Enhanced" and e.config.ref_table.ability.set ~= "Default"
+        and not (e.config.ref_table.ability.set == "Joker" and #G.jokers.cards < G.jokers.config.card_limit +
+            ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0))
+        and not (e.config.ref_table.ability.consumeable and not is_cine and #G.consumeables.cards < G.consumeables.config.card_limit +
+            ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0))
+        and not (is_cine and #G.cine_quests.cards < G.cine_quests.config.card_limit +
+            ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0)) then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
     else
@@ -1353,7 +1605,7 @@ function G.FUNCS.can_select_card(e)
     can_select_card_ref(e)
 
     if Reverie.is_cine_or_reverie(e.config.ref_table) and not (e.config.ref_table.edition and e.config.ref_table.edition.negative)
-    and #G.cine_quests.cards >= G.cine_quests.config.card_limit then
+        and #G.cine_quests.cards >= G.cine_quests.config.card_limit then
         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
         e.config.button = nil
     end
@@ -1363,12 +1615,18 @@ local use_and_sell_buttons_ref = G.UIDEF.use_and_sell_buttons
 function G.UIDEF.use_and_sell_buttons(card)
     local result = use_and_sell_buttons_ref(card)
 
-    if (Reverie.find_used_cine("Crazy Lucky") or Reverie.is_cine_or_reverie(card)) and card.ability.consumeable and card.area and card.area == G.pack_cards then
+    if (Reverie.is_cine_or_reverie(card) or Reverie.find_used_cine("Crazy Lucky")) and card.ability.consumeable and card.area and card.area == G.pack_cards then
         return {
-            n=G.UIT.ROOT, config = {padding = 0, colour = G.C.CLEAR}, nodes={
-                {n=G.UIT.R, config={ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5*card.T.w - 0.15, maxw = 0.9*card.T.w - 0.15, minh = 0.3*card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_select_crazy_card'}, nodes={
-                {n=G.UIT.T, config={text = localize('b_select'),colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true}}
-            }}}
+            n = G.UIT.ROOT,
+            config = { padding = 0, colour = G.C.CLEAR },
+            nodes = {
+                {
+                    n = G.UIT.R,
+                    config = { ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5 * card.T.w - 0.15, maxw = 0.9 * card.T.w - 0.15, minh = 0.3 * card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_select_crazy_card' },
+                    nodes = {
+                        { n = G.UIT.T, config = { text = localize('b_select'), colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true } }
+                    }
+                } }
         }
     end
 
@@ -1382,28 +1640,28 @@ function G.UIDEF.card_focus_ui(card)
     local card_width = card.T.w + (card.ability.consumeable and -0.1 or card.ability.set == "Voucher" and -0.16 or 0)
 
     if Reverie.find_used_cine("Crazy Lucky") and card.area == G.pack_cards and G.pack_cards then
-        base_attach.children.use = G.UIDEF.card_focus_button{
+        base_attach.children.use = G.UIDEF.card_focus_button {
             card = card, parent = base_attach, type = "select",
             func = "can_select_crazy_card", button = "use_card", card_width = card_width
         }
     elseif card.ability.set == "Booster" and (card.area == G.shop_jokers or card.area == G.shop_vouchers) then
         base_attach.children.buy = nil
-        base_attach.children.redeem = G.UIDEF.card_focus_button{
+        base_attach.children.redeem = G.UIDEF.card_focus_button {
             card = card, parent = base_attach, type = "buy",
             func = "can_open", button = "open_booster", card_width = card_width * 0.85
         }
     elseif card.ability.set == "Cine" then
         if card.area == G.pack_cards and G.pack_cards then
-            base_attach.children.use = G.UIDEF.card_focus_button{
+            base_attach.children.use = G.UIDEF.card_focus_button {
                 card = card, parent = base_attach, type = "select",
                 func = "can_select_card", button = "use_card", card_width = card_width
             }
         elseif G.cine_quests and card.area == G.cine_quests and G.STATE ~= G.STATES.TUTORIAL then
-            base_attach.children.use = G.UIDEF.card_focus_button{
+            base_attach.children.use = G.UIDEF.card_focus_button {
                 card = card, parent = base_attach, type = "use",
                 func = "can_use_consumeable", button = "use_card", card_width = card_width
             }
-            base_attach.children.sell = G.UIDEF.card_focus_button{
+            base_attach.children.sell = G.UIDEF.card_focus_button {
                 card = card, parent = base_attach, type = "sell",
                 func = "can_sell_card", button = "sell_card", card_width = card_width
             }
@@ -1413,9 +1671,9 @@ function G.UIDEF.card_focus_ui(card)
     return base_background
 end
 
-local is_node_focusable_ref = Controller.is_node_focusable
+Controller.is_node_focusable_reverie_ref = Controller.is_node_focusable
 function Controller:is_node_focusable(node)
-    local ret_val = is_node_focusable_ref(self, node)
+    local ret_val = self:is_node_focusable_reverie_ref(node)
 
     if node:is(Card) and Reverie.find_used_cine("Adrifting") and node.facing == "back" then
         ret_val = true
@@ -1446,7 +1704,7 @@ function G.FUNCS.sell_card(e)
     end
 end
 
-local set_ability_ref = Card.set_ability
+Card.set_ability_reverie_ref = Card.set_ability
 function Card:set_ability(center, initial, delay_sprites)
     local before_enhancements, after_enhancements = 0, 0
 
@@ -1458,7 +1716,7 @@ function Card:set_ability(center, initial, delay_sprites)
         end
     end
 
-    set_ability_ref(self, center, initial, delay_sprites)
+    self:set_ability_reverie_ref(center, initial, delay_sprites)
 
     if self.ability.set == "Cine" and self.config.center.reward then
         self.ability.progress = 0
@@ -1492,7 +1750,7 @@ function Card:set_ability(center, initial, delay_sprites)
     end
 end
 
-local calculate_joker_ref = Card.calculate_joker
+Card.calculate_joker_reverie_ref = Card.calculate_joker
 function Card:calculate_joker(context)
     if self.debuff then
         return nil
@@ -1500,22 +1758,22 @@ function Card:calculate_joker(context)
 
     if self.ability.set == "Cine" and self.ability.progress then
         if (self.config.center.reward == "c_dvrprv_gem_heist" and context.selling_card and context.card.ability.set == "Joker" and context.card.edition)
-        or (self.config.center.reward == "c_dvrprv_ive_no_shape" and context.end_of_round and not context.individual and not context.repetition
-            and G.GAME.chips >= G.GAME.blind.chips * self.ability.extra.chips)
-        or (self.config.center.reward == "c_dvrprv_unseen" and context.end_of_round and not context.individual and not context.repetition
-            and G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer) >= self.ability.extra.slots)
-        or (self.config.center.reward == "c_dvrprv_crazy_lucky" and context.open_booster)
-        or (self.config.center.reward == "c_dvrprv_tag_or_die" and context.skip_blind)
-        or (self.config.center.reward == "c_dvrprv_let_it_moon" and context.using_consumeable
-            and (context.consumeable.ability.set == "Tarot" or context.consumeable.ability.set == "Planet"))
-        or (self.config.center.reward == "c_dvrprv_poker_face" and context.enhancing_card)
-        or (self.config.center.reward == "c_dvrprv_eerie_inn" and context.any_card_destroyed)
-        or (self.config.center.reward == "c_dvrprv_adrifting" and context.debuff_or_flipped_played)
-        or (self.config.center.reward == "c_dvrprv_morsel" and context.joker_added and Reverie.is_food_joker(context.card.config.center_key))
-        or (self.config.center.reward == "c_dvrprv_alchemist" and context.using_consumeable and context.consumeable.ability.set == "Alchemical")
-        or (self.config.center.reward == "c_dvrprv_very_hue" and context.using_consumeable and context.consumeable.ability.set == "Colour")
-        or (self.config.center.reward == "c_dvrprv_radioactive" and context.joker_added and context.card.config.center.rarity == 5)
-        or (self.config.center.reward == "c_dvrprv_jovial_m" and context.selling_card and context.card.config.center.key == "j_jolly") then
+            or (self.config.center.reward == "c_dvrprv_ive_no_shape" and context.end_of_round and not context.individual and not context.repetition
+                and G.GAME.chips >= G.GAME.blind.chips * self.ability.extra.chips)
+            or (self.config.center.reward == "c_dvrprv_unseen" and context.end_of_round and not context.individual and not context.repetition
+                and G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer) >= self.ability.extra.slots)
+            or (self.config.center.reward == "c_dvrprv_crazy_lucky" and context.open_booster)
+            or (self.config.center.reward == "c_dvrprv_tag_or_die" and context.skip_blind)
+            or (self.config.center.reward == "c_dvrprv_let_it_moon" and context.using_consumeable
+                and (context.consumeable.ability.set == "Tarot" or context.consumeable.ability.set == "Planet"))
+            or (self.config.center.reward == "c_dvrprv_poker_face" and context.enhancing_card)
+            or (self.config.center.reward == "c_dvrprv_eerie_inn" and context.any_card_destroyed)
+            or (self.config.center.reward == "c_dvrprv_adrifting" and context.debuff_or_flipped_played)
+            or (self.config.center.reward == "c_dvrprv_morsel" and context.joker_added and Reverie.is_food_joker(context.card.config.center_key))
+            or (self.config.center.reward == "c_dvrprv_alchemist" and context.using_consumeable and context.consumeable.ability.set == "Alchemical")
+            or (self.config.center.reward == "c_dvrprv_very_hue" and context.using_consumeable and context.consumeable.ability.set == "Colour")
+            or (self.config.center.reward == "c_dvrprv_radioactive" and context.joker_added and context.card.config.center.rarity == 5)
+            or (self.config.center.reward == "c_dvrprv_jovial_m" and context.selling_card and context.card.config.center.key == "j_jolly") then
             return Reverie.progress_cine_quest(self)
         end
     end
@@ -1536,31 +1794,38 @@ function Card:calculate_joker(context)
 
         if Reverie.config.custom_morsel_compat then
             if (self.config.center.key == "j_olab_mystery_soda" and context.selling_self)
-            or (self.config.center.key == "j_evo_full_sugar_cola" and context.selling_self)
-            or (self.config.center.key == "j_pape_ghost_cola" and context.selling_self)
-            or (self.config.center.key == "j_jank_cut_the_cheese" and context.setting_blind)
-            or (self.config.center.key == "j_mf_tonersoup" and context.cardarea == G.jokers and context.before) then
+                or (self.config.center.key == "j_evo_full_sugar_cola" and context.selling_self)
+                or (self.config.center.key == "j_pape_ghost_cola" and context.selling_self)
+                or (self.config.center.key == "j_jank_cut_the_cheese" and context.setting_blind)
+                or (self.config.center.key == "j_mf_tonersoup" and context.cardarea == G.jokers and context.before) then
                 self.config.center:calculate(self, context)
                 delay(0.5)
             elseif self.config.center.key == "j_olab_fine_wine" and context.setting_blind and not context.getting_sliced and not context.blueprint then
                 self.ability.extra.discards = self.ability.extra.discards + 1
             elseif self.config.center.key == "j_mf_goldencarrot" and context.after and context.cardarea == G.jokers and not context.blueprint then
-                if not self.gone and self.ability.extra - 1 > 0 then
+                if not self.gone and type(self.ability.extra) == "number" and self.ability.extra - 1 > 0 then
                     self.ability.extra = self.ability.extra - 1
                 end
             elseif self.config.center.key == "j_bunc_fondue" and context.after and G.GAME.current_round.hands_played == 1 and context.scoring_hand and not context.blueprint then
                 enable_exotics()
 
                 for i = 1, #context.scoring_hand do
-                    G.E_MANAGER:add_event(Event{trigger = "after", delay = 0.15, func = function() context.scoring_hand[i]:flip(); play_sound("card1", 1); context.scoring_hand[i]:juice_up(0.3, 0.3); return true end })
+                    G.E_MANAGER:add_event(Event { trigger = "after", delay = 0.15, func = function()
+                        context.scoring_hand[i]:flip(); play_sound("card1", 1); context.scoring_hand[i]:juice_up(0.3, 0.3); return true
+                    end })
                 end
 
                 for i = 1, #context.scoring_hand do
-                    G.E_MANAGER:add_event(Event{trigger = "after", delay = 0.1,  func = function() context.scoring_hand[i]:change_suit("bunc_Fleurons"); return true end })
+                    G.E_MANAGER:add_event(Event { trigger = "after", delay = 0.1, func = function()
+                        context.scoring_hand[i]:change_suit("bunc_Fleurons"); return true
+                    end })
                 end
 
                 for i = 1, #context.scoring_hand do
-                    G.E_MANAGER:add_event(Event{trigger = "after", delay = 0.15, func = function() context.scoring_hand[i]:flip(); play_sound("tarot2", 1, 0.6); self:juice_up(0.7); context.scoring_hand[i]:juice_up(0.3, 0.3); return true end })
+                    G.E_MANAGER:add_event(Event { trigger = "after", delay = 0.15, func = function()
+                        context.scoring_hand[i]:flip(); play_sound("tarot2", 1, 0.6); self:juice_up(0.7); context
+                            .scoring_hand[i]:juice_up(0.3, 0.3); return true
+                    end })
                 end
 
                 delay(0.7 * 1.25)
@@ -1568,7 +1833,7 @@ function Card:calculate_joker(context)
         end
     end
 
-    local result = calculate_joker_ref(self, context)
+    local result = self:calculate_joker_reverie_ref(context)
 
     if self.ability.set == "Joker" and self.ability.morseled then
         if self.config.center.key == "j_kcva_swiss" and context.after and not context.blueprint then
@@ -1576,7 +1841,7 @@ function Card:calculate_joker(context)
                 message = localize {
                     type = "variable",
                     key = "a_mult",
-                    vars = {self.ability.mult}
+                    vars = { self.ability.mult }
                 },
                 colour = G.C.MULT
             });
@@ -1595,31 +1860,36 @@ function Reverie.progress_cine_quest(card)
 
     card.ability.progress = card.ability.progress + 1
 
-    for _, v in ipairs(G.jokers.cards) do
-        v:calculate_joker({
-            cine_progress = true,
-            card = card
-        })
-    end
-
-    if card.ability.progress >= card.ability.extra.goal then
-        Reverie.complete_cine_quest(card)
-    else
+    if card.ability.progress <= card.ability.extra.goal then
         card_eval_status_text(card, "extra", nil, nil, nil, {
-            message = card.ability.progress.."/"..card.ability.extra.goal,
+            message = card.ability.progress .. "/" .. card.ability.extra.goal,
             colour = G.C.SECONDARY_SET.Cine
         })
     end
+    if card.ability.progress >= card.ability.extra.goal then
+        Reverie.complete_cine_quest(card)
+    end
+
+    SMODS.calculate_context({ cine_progress = true, card = card })
 end
 
 function Reverie.complete_cine_quest(card)
+    if card.flipping or not card.ability.progress then return end -- Safety check
+
+    local orig_pos = card.config.center.pos
+    card:set_ability(G.P_CENTERS[card.config.center.reward], true)
+    card.children.center:set_sprite_pos(orig_pos)
+
     G.E_MANAGER:add_event(Event({
         func = function()
+            G.GAME.used_jokers[card.config.center_key] = nil
+            card.config.card = {}
             local percent = 1.15 - (1 - 0.999) / (1 - 0.998) * 0.3
             G.E_MANAGER:add_event(Event({
                 trigger = "after",
                 delay = 0.15,
                 func = function()
+                    if card.flipping then return end -- Safety check
                     card:flip()
                     play_sound("card1", percent)
                     card:juice_up(0.3, 0.3)
@@ -1627,50 +1897,23 @@ function Reverie.complete_cine_quest(card)
                     return true
                 end
             }))
-            delay(0.2)
-            G.E_MANAGER:add_event(Event({
-                trigger = "after",
-                delay = 0.1,
-                func = function()
-                    G.GAME.used_jokers[card.config.center_key] = nil
-                    card.config.card = {}
-                    card:set_ability(G.P_CENTERS[card.config.center.reward], true)
-
-                    if not card.config.center.discovered then
-                        discover_card(card.config.center)
-                    end
-
-                    if Reverie.find_mod("JokerDisplay") and _G["JokerDisplay"] and Reverie.config.jokerdisplay_compat then
-                        card.joker_display_values.disabled = true
-                    end
-
-                    card.ability.progress = nil
-
-                    return true
-                end
-            }))
-
-            percent = 0.85 + (1 - 0.999) / (1 - 0.998) * 0.3
-            G.E_MANAGER:add_event(Event({
-                trigger = "after",
-                delay = 0.15,
-                func = function()
-                    card:flip()
-                    play_sound("tarot2", percent, 0.6)
-                    card:juice_up(0.3, 0.3)
-
-                    return true
-                end
-            }))
-
+            return true
+        end
+    }))
+    G.E_MANAGER:add_event(Event({
+        func = function()
+            if Reverie.find_mod("JokerDisplay") and _G["JokerDisplay"] and Reverie.config.jokerdisplay_compat then
+                if card.flipping then return end -- Safety check
+                card.joker_display_values.disabled = true
+            end
             return true
         end
     }))
 end
 
-local tag_init_ref = Tag.init
+Tag.tag_init_reverie_ref = Tag.init
 function Tag:init(_tag, for_collection, _blind_type)
-    tag_init_ref(self, _tag, for_collection, _blind_type)
+    self:tag_init_reverie_ref(_tag, for_collection, _blind_type)
 
     local proto = G.P_TAGS[_tag] or G.tag_undiscovered
     if proto.atlas then
@@ -1678,32 +1921,32 @@ function Tag:init(_tag, for_collection, _blind_type)
     end
 end
 
-local tag_load_ref = Tag.load
+Tag.tag_load_reverie_ref = Tag.load
 function Tag:load(tag_savetable)
     local proto = G.P_TAGS[tag_savetable.key] or G.tag_undiscovered
     if proto.atlas then
         self.atlas = proto.atlas
     end
 
-    tag_load_ref(self, tag_savetable)
+    self:tag_load_reverie_ref(tag_savetable)
 end
 
-local card_highlight_ref = Card.highlight
+Card.card_highlight_reverie_ref = Card.highlight
 function Card:highlight(is_higlighted)
-    card_highlight_ref(self, is_higlighted)
+    self:card_highlight_reverie_ref(is_higlighted)
 
     if Reverie.is_cine_or_reverie(self) or (self.area and self.area == G.pack_cards) then
         if self.highlighted and self.area and self.area.config.type ~= 'shop' then
             local x_off = (self.ability.consumeable and -0.1 or 0)
-            self.children.use_button = UIBox{
-                definition = G.UIDEF.use_and_sell_buttons(self), 
-                config = {align=
-                        ((self.area == G.jokers) or (self.area == G.consumeables) or (self.area == G.cine_quests)) and "cr" or
-                        "bmi"
-                    , offset = 
-                        ((self.area == G.jokers) or (self.area == G.consumeables) or (self.area == G.cine_quests)) and {x=x_off - 0.4,y=0} or
-                        {x=0,y=0.65},
-                    parent =self}
+            self.children.use_button = UIBox {
+                definition = G.UIDEF.use_and_sell_buttons(self),
+                config = { align =
+                    ((self.area == G.jokers) or (self.area == G.consumeables) or (self.area == G.cine_quests)) and "cr" or
+                    "bmi"
+                , offset =
+                    ((self.area == G.jokers) or (self.area == G.consumeables) or (self.area == G.cine_quests)) and { x = x_off - 0.4, y = 0 } or
+                    { x = 0, y = 0.65 },
+                    parent = self }
             }
         elseif self.children.use_button then
             self.children.use_button:remove()
@@ -1773,9 +2016,9 @@ function end_round()
     end
 end
 
-local add_to_deck_ref = Card.add_to_deck
+Card.add_to_deck_reverie_ref = Card.add_to_deck
 function Card:add_to_deck(from_debuff)
-    add_to_deck_ref(self, from_debuff)
+    self:add_to_deck_reverie_ref(from_debuff)
 
     if G.cine_quests and self.ability.set == "Joker" then
         for _, v in ipairs(G.cine_quests.cards) do
@@ -1787,14 +2030,14 @@ function Card:add_to_deck(from_debuff)
     end
 end
 
-local card_sell_card_ref = Card.sell_card
+Card.card_sell_card_reverie_ref = Card.sell_card
 function Card:sell_card()
     self.ability.not_destroyed = true
 
-    card_sell_card_ref(self)
+    self:card_sell_card_reverie_ref()
 end
 
-local card_remove_ref = Card.remove
+Card.card_remove_reverie_ref = Card.remove
 function Card:remove()
     local destroyed = (self.added_to_deck and not self.ability.not_destroyed) or (G.playing_cards and self.playing_card)
     local on_game_area = nil
@@ -1806,7 +2049,7 @@ function Card:remove()
         end
     end
 
-    card_remove_ref(self)
+    self:card_remove_reverie_ref()
 
     if G.cine_quests and destroyed and on_game_area then
         for _, v in ipairs(G.cine_quests.cards) do
@@ -1851,6 +2094,11 @@ function Reverie.set_card_back(card)
         return
     end
 
+    -- Bunco blind pack compatibility
+    if card.ability.blind_card then
+        return
+    end
+
     if card.ability.set == "Alchemical" or card.ability.set == "Default" or card.ability.set == "Enhanced" then
         card.children.back.atlas = G.ASSET_ATLAS[G.GAME.selected_back.atlas or "centers"]
         card.children.back:set_sprite_pos(G.GAME.selected_back.pos)
@@ -1858,25 +2106,26 @@ function Reverie.set_card_back(card)
         card.children.back.atlas = G.ASSET_ATLAS["dvrprv_cine_vouchers"]
         card.children.back:set_sprite_pos(Reverie.flipped_voucher_pos)
     elseif card.ability.set == "Tag" then
-        card.children.back = Sprite(card.T.x, card.T.y, card.T.w, card.T.h, G.ASSET_ATLAS["dvrprv_cine_tags"], Reverie.flipped_tag_pos)
+        card.children.back = Sprite(card.T.x, card.T.y, card.T.w, card.T.h, G.ASSET_ATLAS["dvrprv_cine_tags"],
+            Reverie.flipped_tag_pos)
         card.children.back.states.hover = card.states.hover
         card.children.back.states.click = card.states.click
         card.children.back.states.drag = card.states.drag
         card.children.back.states.collide.can = false
-        card.children.back:set_role({major = card, role_type = "Glued", draw_major = card})
+        card.children.back:set_role({ major = card, role_type = "Glued", draw_major = card })
     elseif card.ability.set == "Booster" then
         card.children.back.atlas = G.ASSET_ATLAS["dvrprv_cine_boosters"]
         card.children.back:set_sprite_pos(Reverie.flipped_booster_pos)
     end
 end
 
-local card_load_ref = Card.load
+Card.card_load_reverie_ref = Card.load
 function Card:load(cardTable, other_card)
     if cardTable.label == "Tag" then
         G.P_CENTERS[cardTable.save_fields.center] = G.P_TAGS[cardTable.save_fields.center]
     end
 
-    card_load_ref(self, cardTable, other_card)
+    self:card_load_reverie_ref(cardTable, other_card)
 
     if cardTable.label == "Tag" then
         G.P_CENTERS[cardTable.save_fields.center] = nil
@@ -1934,14 +2183,10 @@ function Reverie.is_in_reverie_pack()
     end
 end
 
-function Reverie.get_var_object(card, center)
-    return card and card.ability or center.config
-end
-
 local check_for_buy_space_ref = G.FUNCS.check_for_buy_space
 function G.FUNCS.check_for_buy_space(card)
     if Reverie.is_cine_or_reverie(card) and not (#G.cine_quests.cards < G.cine_quests.config.card_limit +
-    ((card.edition and card.edition.negative) and 1 or 0)) then
+            ((card.edition and card.edition.negative) and 1 or 0)) then
         alert_no_space(card, G.cine_quests)
 
         return false
@@ -1951,7 +2196,12 @@ function G.FUNCS.check_for_buy_space(card)
 end
 
 function Reverie.find_mod(id)
-    return (SMODS.Mods[id] or {}).can_load
+    for _, mod in ipairs(SMODS.find_mod(id)) do
+        if mod.can_load then
+            return true
+        end
+    end
+    return false
 end
 
 if Reverie.find_mod("cartomancer") and Cartomancer then
@@ -1960,26 +2210,33 @@ if Reverie.find_mod("cartomancer") and Cartomancer then
         local result = expand_G_jokers_ref()
 
         local self_T_w = math.max(4.9 * G.CARD_W, 0.6 * #G.cine_quests.cards * G.CARD_W)
-        local self_T_x = G.jokers.T.x - (self_T_w- 4.9 * G.CARD_W) * G.jokers.cart_zoom_slider / 100
+        local self_T_x = G.jokers.T.x - (self_T_w - 4.9 * G.CARD_W) * G.jokers.cart_zoom_slider / 100
 
         local self = G.cine_quests
 
         for k, card in ipairs(self.cards) do
             if not card.states.drag.is then
-                card.T.r = 0.1*(-#self.cards/2 - 0.5 + k)/(#self.cards)+ (G.SETTINGS.reduced_motion and 0 or 1)*0.02*math.sin(2*G.TIMERS.REAL+card.T.x)
+                card.T.r = 0.1 * (- #self.cards / 2 - 0.5 + k) / (#self.cards) +
+                    (G.SETTINGS.reduced_motion and 0 or 1) * 0.02 * math.sin(2 * G.TIMERS.REAL + card.T.x)
                 local max_cards = 1
-                card.T.x = self_T_x + (self_T_w-self.card_w)*((k-1)/math.max(max_cards-1, 1) - 0.5*(#self.cards-max_cards)/math.max(max_cards-1, 1)) + 0.5*(self.card_w - card.T.w)
+                card.T.x = self_T_x +
+                    (self_T_w - self.card_w) *
+                    ((k - 1) / math.max(max_cards - 1, 1) - 0.5 * (#self.cards - max_cards) / math.max(max_cards - 1, 1)) +
+                    0.5 * (self.card_w - card.T.w)
                 if #self.cards > 2 or (#self.cards > 1 and self == G.consumeables) or (#self.cards > 1 and self.config.spread) then
-                    card.T.x = self_T_x + (self_T_w-self.card_w)*((k-1)/(#self.cards-1)) + 0.5*(self.card_w - card.T.w)
+                    card.T.x = self_T_x + (self_T_w - self.card_w) * ((k - 1) / (#self.cards - 1)) +
+                        0.5 * (self.card_w - card.T.w)
                 elseif #self.cards > 1 and self ~= G.consumeables then
-                    card.T.x = self_T_x + (self_T_w-self.card_w)*((k - 0.5)/(#self.cards)) + 0.5*(self.card_w - card.T.w)
+                    card.T.x = self_T_x + (self_T_w - self.card_w) * ((k - 0.5) / (#self.cards)) +
+                        0.5 * (self.card_w - card.T.w)
                 else
-                    card.T.x = self_T_x + self_T_w/2 - self.card_w/2 + 0.5*(self.card_w - card.T.w)
+                    card.T.x = self_T_x + self_T_w / 2 - self.card_w / 2 + 0.5 * (self.card_w - card.T.w)
                 end
-                local highlight_height = G.HIGHLIGHT_H/2
+                local highlight_height = G.HIGHLIGHT_H / 2
                 if not card.highlighted then highlight_height = 0 end
-                card.T.y = self.T.y + self.T.h/2 - card.T.h/2 - highlight_height+ (G.SETTINGS.reduced_motion and 0 or 1)*0.03*math.sin(0.666*G.TIMERS.REAL+card.T.x)
-                card.T.x = card.T.x + card.shadow_parrallax.x/30
+                card.T.y = self.T.y + self.T.h / 2 - card.T.h / 2 - highlight_height +
+                    (G.SETTINGS.reduced_motion and 0 or 1) * 0.03 * math.sin(0.666 * G.TIMERS.REAL + card.T.x)
+                card.T.x = card.T.x + card.shadow_parrallax.x / 30
             end
         end
 
@@ -1993,7 +2250,11 @@ if Reverie.find_mod("cartomancer") and Cartomancer then
         if self == G.cine_quests and G.jokers.cart_jokers_expanded then
             local align_cards = Cartomancer.expand_G_jokers()
 
-            table.sort(self.cards, function (a, b) return a.T.x + a.T.w/2 - 100*(a.pinned and a.sort_id or 0) < b.T.x + b.T.w/2 - 100*(b.pinned and b.sort_id or 0) end)
+            table.sort(self.cards,
+                function(a, b)
+                    return a.T.x + a.T.w / 2 - 100 * (a.pinned and a.sort_id or 0) <
+                        b.T.x + b.T.w / 2 - 100 * (b.pinned and b.sort_id or 0)
+                end)
 
             if align_cards then
                 self:hard_set_cards()

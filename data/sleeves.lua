@@ -32,7 +32,7 @@ Reverie.sleeves = {
             y = 0
         },
         unlocked = false,
-        unlock_condition = { deck = "b_dvrprv_filmstrip", stake = 6 },
+        unlock_condition = { deck = "b_dvrprv_filmstrip", stake = "stake_purple" },
         loc_vars = function (self)
             local key = self.key
 
@@ -54,7 +54,7 @@ Reverie.sleeves = {
             y = 0
         },
         unlocked = false,
-        unlock_condition = { deck = "b_dvrprv_stamp", stake = 5 },
+        unlock_condition = { deck = "b_dvrprv_stamp", stake = "stake_blue" },
         loc_vars = function (self)
             local key = self.key
 

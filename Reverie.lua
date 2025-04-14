@@ -1,13 +1,3 @@
---- STEAMODDED HEADER
---- MOD_NAME: Reverie
---- MOD_ID: Reverie
---- MOD_AUTHOR: [DVRP]
---- MOD_DESCRIPTION: A movie-themed expansion that focuses on providing special shops and various contents around it
---- DISPLAY_NAME: Reverie
---- BADGE_COLOUR: 9db95f
---- VERSION: 1.3.0
---- PREFIX: dvrprv
-
 ----------------------------------------------
 ------------MOD CODE -------------------------
 

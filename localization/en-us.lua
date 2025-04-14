@@ -51,8 +51,8 @@ return {
                 text = {
                     "During this shop,",
                     "all cards become",
-                    "{C:dark_edition}Polychrome{} and {C:attention}25%{} off",
-                    "{s:0.8}Rerolls cards"
+                    "{C:dark_edition}Polychrome{} and {C:attention}#1#%{} off",
+                    "{s:0.8}Rerolls cards and {s:0.8,C:attention}Booster Packs"
                 }
             },
             c_dvrprv_crazy_lucky_quest = {
@@ -192,7 +192,7 @@ return {
                 name = "Fool Metal Alchemist",
                 text = {
                     "During this shop,",
-                    "{C:attention}+#1#{} consumable slot and",
+                    "{C:attention}+#1#{} consumable slots and",
                     "only {C:alchemical}Alchemical{} cards appear",
                     "{s:0.8}Rerolls {s:0.8,C:attention}Booster Packs"
                 }
@@ -257,7 +257,8 @@ return {
             j_diet_cola_morsel_alternative = {
                 text = {
                     ".", -- Blank strings are ignored, so putting random character to preserve index info
-                    "create two free"
+                    "create two free",
+                    "{C:attention}#1#s",
                 }
             },
             j_olab_fine_wine_morsel_alternative = {
@@ -313,10 +314,10 @@ return {
             j_dvrprv_dynamic_film = {
                 name = "Dynamic Film",
                 text = {
-                    "This Joker gains {C:chips}+#2#{} Chips",
-                    "every time an {C:cine}Exchange Coupon",
-                    "progresses",
-                    "{C:inactive}(Currently +{C:chips}#1#{C:inactive} Chips)"
+                    "This Joker gains",
+                    "{C:chips}+#2#{} Chips every time an",
+                    "{C:cine}Exchange Coupon{} progresses",
+                    "{C:inactive}(Currently {C:chips}+#1#{C:inactive} Chips)"
                 }
             }
         },
@@ -326,13 +327,22 @@ return {
                 text = {
                     "{C:cine}Cine{} cards can stack",
                     "{C:attention}+#1#{} Cine slot"
+                },
+                unlock = {
+                    'Win a run with the',
+                    '{C:attention}Reverie{} mod',
+                    'enabled'
                 }
             },
             b_dvrprv_stamp = {
                 name = "Stamp Deck",
                 text = {
-                    "Skipping {C:attention}Blind{} gives",
+                    "Skipping a {C:attention}Blind{} gives",
                     "{C:attention,T:p_dvrprv_tag_jumbo_1}#1#{} instead"
+                },
+                unlock = {
+                    'Win a run without',
+                    '{C:attention}Skipping a Blind{}'
                 }
             }
         },
@@ -355,14 +365,14 @@ return {
             sleeve_dvrprv_stamp = {
                 name = "Stamp Sleeve",
                 text = {
-                    "Skipping {C:attention}Blind{} gives",
+                    "Skipping a {C:attention}Blind{} gives",
                     "{C:attention,T:p_dvrprv_tag_jumbo_1}#1#{} instead"
                 }
             },
             sleeve_dvrprv_stamp_alt = {
                 name = "Stamp Sleeve",
                 text = {
-                    "Skipping {C:attention}Blind{} also",
+                    "Skipping a {C:attention}Blind{} also",
                     "gives a {C:attention}random Tag{}"
                 }
             }
@@ -395,8 +405,8 @@ return {
             c_dvrprv_reverie = {
                 name = "Reverie",
                 text = {
-                    "Applies every",
-                    "{C:cine,E:1}Cine cards",
+                    "Applies {C:legendary,E:1}every{}",
+                    "{C:legendary,E:1}Cine card{}",
                     "to this shop"
                 }
             }
@@ -407,8 +417,8 @@ return {
                 text = {
                     "{C:attention}+#1#{} card slot",
                     "available in shop",
-                    "while {C:cine}Cine{} card is",
-                    "active"
+                    "while a {C:cine}Cine{} card",
+                    "is active"
                 }
             },
             v_dvrprv_megaphone = {
@@ -417,6 +427,11 @@ return {
                     "Requirements of",
                     "{C:cine}Exchange Coupons{} are",
                     "halved"
+                },
+                unlock = {
+                    "Use a total of #1#",
+                    "{C:cine}Cine{} cards",
+                    "{C:inactive}(#2#)",
                 }
             }
         },
@@ -485,7 +500,7 @@ return {
                 name = "Mega Film Pack",
                 text = {
                     "Choose {C:attention}#1#{} of up to",
-                    "{C:attention}#2# {C:cine}Cine{} cards to add",
+                    "{C:attention}#2# {E:1,C:cine}Cine{} cards to add",
                     "to your possession"
                 }
             },
@@ -510,12 +525,13 @@ return {
         dictionary = {
             k_dvrprv_title = "Reverie",
             k_dvrprv_description = "Prepare Your Tickets",
-            k_dvrprv_cine = "Cine",
+            k_cine = "Cine",
             k_dvrprv_tag = "Tag",
             k_dvrprv_tag_pack = "Tag Pack",
             k_dvrprv_crazy_pack = "Pack",
             k_dvrprv_film_pack = "Film Pack",
-            b_dvrprv_cine_cards = "Cine Cards",
+            k_dvrprv_redeemed_cine = "Now Playing",
+            b_cine_cards = "Cine Cards",
             b_dvrprv_jokerdisplay_compat = "JokerDisplay compatibility",
             b_dvrprv_jokerdisplay_compat_info = {
                 "Enable JokerDisplay compatibility for",
