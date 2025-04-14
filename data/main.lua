@@ -330,12 +330,24 @@ function Reverie.create_tag_as_card(area, big)
 end
 
 function Reverie.create_booster(area, center)
-    local card = Card(area.T.x + area.T.w / 2, area.T.y, G.CARD_W * 1.27, G.CARD_H * 1.27, G.P_CARDS.empty, center, {
-        bypass_discovery_center = true,
-        bypass_discovery_ui = true
-    })
-    create_shop_card_ui(card, "Booster", area)
+    if not center then
+        print("Error: Invalid center passed to create_booster.")
+        return nil
+    end
 
+    local success, card = pcall(function()
+        return Card(area.T.x + area.T.w / 2, area.T.y, G.CARD_W * 1.27, G.CARD_H * 1.27, G.P_CARDS.empty, center, {
+            bypass_discovery_center = true,
+            bypass_discovery_ui = true
+        })
+    end)
+
+    if not success or not card then
+        print("Error: Failed to create card in create_booster.")
+        return nil
+    end
+
+    create_shop_card_ui(card, "Booster", area)
     return card
 end
 
@@ -1087,12 +1099,12 @@ function CardArea:emplace(card, location, stay_flipped)
             end
 
             local new_card = Reverie.create_booster(self, G.P_CENTERS.p_dvrprv_crazy_lucky_1)
-            if new_card then
-                emplace_ref(self, new_card, location, stay_flipped)
-            else
-                -- Log an error or handle the case where new_card is nil
+            if not new_card then
                 print("Error: Failed to create a new card for Crazy Lucky cine.")
+                return -- Exit early to prevent further issues
             end
+
+            emplace_ref(self, new_card, location, stay_flipped)
             return
         end
     end
@@ -1769,7 +1781,7 @@ function Card:calculate_joker(context)
                 and G.GAME.chips >= G.GAME.blind.chips * self.ability.extra.chips)
             or (self.config.center.reward == "c_dvrprv_unseen" and context.end_of_round and not context.individual and not context.repetition
                 and G.jokers.config.card_limit - (#G.jokers.cards + G.GAME.joker_buffer) >= self.ability.extra.slots)
-            or (self.config.center.reward== "c_dvrprv_crazy_lucky" and context.open_booster)
+            or (self.config.center.reward== "c_dvrprvcrazy_lucky" and context.open_booster)
             or (self.config.center.reward == "c_dvrprv_tag_or_die" and context.skip_blind)
             or (self.config.center.reward == "c_dvrprv_let_it_moon" and context.using_consumeable
                 and (context.consumeable.ability.set == "Tarot" or context.consumeable.ability.set == "Planet"))
