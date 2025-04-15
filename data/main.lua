@@ -1011,9 +1011,7 @@ function CardArea:emplace(card, location, stay_flipped)
     -- Add a comprehensive nil check at the beginning of the function
     if not card then
         print("Warning: Reverie mod - Attempted to emplace a nil card")
-        -- Still call the original function but with a nil card
-        -- The chain of function calls should handle this properly
-        return emplace_ref(self, card, location, stay_flipped)
+        return nil
     end
     
     Reverie.set_card_back(card)
@@ -1023,7 +1021,7 @@ function CardArea:emplace(card, location, stay_flipped)
         return
     end
 
-    emplace_ref(self, card, location, stay_flipped)
+    local result = emplace_ref(self, card, location, stay_flipped)
 
     if card.ability.booster_pos then
         G.GAME.current_round.max_boosters = math.max(G.GAME.current_round.max_boosters or 0, card.ability.booster_pos)
@@ -1092,25 +1090,36 @@ function CardArea:emplace(card, location, stay_flipped)
                 card.sprite_facing = "back"
                 card.pinch.x = false
             end
-        elseif Reverie.find_used_cine("Crazy Lucky") and self == G.shop_booster and card.config and card.config.center and card.config.center.kind ~= "Crazy" then
-            -- Enhanced safety checks for card.config and card.config.center
+        elseif Reverie.find_used_cine("Crazy Lucky") and self == G.shop_booster and card and card.config and card.config.center and card.config.center.kind ~= "Crazy" then
+            -- Use a local variable for the card to be removed, don't modify the card parameter directly
             local c = self:remove_card(card)
             if c then
                 c:remove()
             end
 
-            -- Create a new card and ensure it's valid before emplacing it
-            local new_card = Reverie.create_booster(self, G.P_CENTERS.p_dvrprv_crazy_lucky_1)
+            -- Create a new card
+            local new_card = nil
+            if G.P_CENTERS and G.P_CENTERS.p_dvrprv_crazy_lucky_1 then
+                new_card = Reverie.create_booster(self, G.P_CENTERS.p_dvrprv_crazy_lucky_1)
+            end
+
+            -- Only emplace if the new card was created successfully
             if new_card then
-                -- Call the original emplace function directly to avoid our own overridden version
-                -- This prevents any potential recursion or chain reaction issues
-                emplace_ref(self, new_card, location, stay_flipped)
+                -- Call emplace_ref directly, not recursively calling self:emplace
+                local result = emplace_ref(self, new_card, location, stay_flipped)
+                -- Apply any post-emplace processing directly
+                if new_card.ability.booster_pos then
+                    G.GAME.current_round.max_boosters = math.max(G.GAME.current_round.max_boosters or 0, new_card.ability.booster_pos)
+                end
+                return result
             else
                 print("Error: Failed to create a new card for Crazy Lucky cine.")
+                return nil
             end
-            return
         end
     end
+
+    return result
 end
 
 function Reverie.calculate_reroll_cost()
@@ -1779,7 +1788,7 @@ function Card:calculate_joker(context)
     end
 
     if self.ability.set == "Cine" and self.ability.progress then
-        if (self.config.center.reward == "c_dvrprv_gem_heist" and context.selling_card and context.card.ability.set == "Joker" and context.card.edition)
+        if (self.config.center.reward == "c_dvrprv_gem_heist" and context.selling_card and context.card.ability.set =="Joker" and context.card.edition)
             or (self.config.center.reward == "c_dvrprv_ive_no_shape" and context.end_of_round and not context.individual and not context.repetition
                 and G.GAME.chips >= G.GAME.blind.chips * self.ability.extra.chips)
             or (self.config.center.reward == "c_dvrprv_unseen" and context.end_of_round and not context.individual and not context.repetition
