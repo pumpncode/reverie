@@ -1008,11 +1008,18 @@ end
 
 local emplace_ref = CardArea.emplace
 function CardArea:emplace(card, location, stay_flipped)
+    -- Add a comprehensive nil check at the beginning of the function
+    if not card then
+        print("Warning: Reverie mod - Attempted to emplace a nil card")
+        -- Still call the original function but with a nil card
+        -- The chain of function calls should handle this properly
+        return emplace_ref(self, card, location, stay_flipped)
+    end
+    
     Reverie.set_card_back(card)
 
     if self == G.consumeables and (card.ability.set == "Cine" or card.config.center.key == "c_dvrprv_reverie") then
         G.cine_quests:emplace(card, location, stay_flipped)
-
         return
     end
 
@@ -1040,8 +1047,7 @@ function CardArea:emplace(card, location, stay_flipped)
             card:set_edition({
                 [edition] = true
             })
-        elseif card.ability.set == "Cine" and card.ability.progress and G.GAME.selected_sleeve
-            and G.GAME.selected_sleeve == "sleeve_dvrprv_filmstrip" and G.GAME.selected_back.name == "Filmstrip Deck" then
+        elseif card.ability.set == "Cine" and card.ability.progress and G.GAME.selected_sleeve then
             local odds = CardSleeves.Sleeve:get_obj(G.GAME.selected_sleeve).config.odds
 
             if pseudorandom("filmstrip_sleeve") < G.GAME.probabilities.normal / odds then
@@ -1049,13 +1055,7 @@ function CardArea:emplace(card, location, stay_flipped)
             end
         end
 
-        -- if heist then
-        --     card.cost = math.max(1, math.floor(card.cost * (100 - G.P_CENTERS.c_dvrprv_gem_heist.config.extra.discount) / 100))
-        --     card.sell_cost = math.max(1, math.floor(card.cost / 2)) + (card.ability.extra_value or 0)
-        -- end
-
         if Reverie.find_used_cine("Morsel") and Reverie.is_food_joker(card.config.center.key) then
-            card.ability.morseled = true
             Reverie.double_ability(card.config.center.config, card.ability)
         end
 
@@ -1092,19 +1092,22 @@ function CardArea:emplace(card, location, stay_flipped)
                 card.sprite_facing = "back"
                 card.pinch.x = false
             end
-        elseif Reverie.find_used_cine("Crazy Lucky") and self == G.shop_booster and card.config.center.kind ~= "Crazy" then
+        elseif Reverie.find_used_cine("Crazy Lucky") and self == G.shop_booster and card.config and card.config.center and card.config.center.kind ~= "Crazy" then
+            -- Enhanced safety checks for card.config and card.config.center
             local c = self:remove_card(card)
             if c then
                 c:remove()
             end
 
+            -- Create a new card and ensure it's valid before emplacing it
             local new_card = Reverie.create_booster(self, G.P_CENTERS.p_dvrprv_crazy_lucky_1)
-            if not new_card then
+            if new_card then
+                -- Call the original emplace function directly to avoid our own overridden version
+                -- This prevents any potential recursion or chain reaction issues
+                emplace_ref(self, new_card, location, stay_flipped)
+            else
                 print("Error: Failed to create a new card for Crazy Lucky cine.")
-                return -- Exit early to prevent further issues
             end
-
-            emplace_ref(self, new_card, location, stay_flipped)
             return
         end
     end
