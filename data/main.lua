@@ -1770,7 +1770,7 @@ function Card:calculate_joker(context)
             or (self.config.center.reward == "c_dvrprv_eerie_inn" and context.any_card_destroyed)
             or (self.config.center.reward == "c_dvrprv_adrifting" and context.debuff_or_flipped_played)
             or (self.config.center.reward == "c_dvrprv_morsel" and context.joker_added and Reverie.is_food_joker(context.card.config.center_key))
-            or (self.config.center.reward == "c_dvrprv_alchemist" and context.using_consumeable and context.consumeable.ability.set == "Alchemical")
+            or (self.config.center.reward == "c_dvrprv_alchemist" and context.using_consumeable and context.consumeable.ability.set == "Alchemical" and G.STATE ~= G.STATES.SMODS_BOOSTER_OPENED)
             or (self.config.center.reward == "c_dvrprv_very_hue" and context.using_consumeable and context.consumeable.ability.set == "Colour")
             or (self.config.center.reward == "c_dvrprv_radioactive" and context.joker_added and context.card.config.center.rarity == 5)
             or (self.config.center.reward == "c_dvrprv_jovial_m" and context.selling_card and context.card.config.center.key == "j_jolly") then
