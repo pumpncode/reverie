@@ -769,7 +769,7 @@ SMODS.DrawStep {
 for _, v in pairs(Reverie.cines) do
 
     if v.dependencies == "MoreFluff" then
-        if next(SMODS.find_mod("MoreFluff")) and (not MoreFluff.config['Colour Cards']) then
+        if next(SMODS.find_mod("MoreFluff")) and (not SMODS.Mods.MoreFluff.config['Colour Cards']) then
             goto continue
         end
     end
