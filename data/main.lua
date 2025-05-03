@@ -1076,7 +1076,7 @@ function CardArea:emplace(card, location, stay_flipped)
     
             if center and type(center.config.extra) == "table" and center.config.extra.set_price then
                 card.cost = center.config.extra.set_price
-                card.sell_cost = math.floor(center.config.extra.set_price / 2)
+                card.sell_cost = math.max(1, math.floor(card.cost / 2)) + (card.ability.extra_value or 0)
             end
             if center and type(center.config.extra) == "table" and center.config.extra.discount then
                 card.cost = math.max(1, math.floor(card.cost * (100 - center.config.extra.discount) / 100))
