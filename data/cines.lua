@@ -768,11 +768,11 @@ SMODS.DrawStep {
 
 for _, v in pairs(Reverie.cines) do
 
-    if v.dependencies == "MoreFluff" then
-        if SMODS.find_mod("MoreFluff") and not SMODS.Mods.MoreFluff.config['Colour Cards'] then
-            goto continue
-        end
-    end
+    -- if v.dependencies == "MoreFluff" then
+    --     if SMODS.find_mod("MoreFluff") and not SMODS.Mods.MoreFluff.config['Colour Cards'] then
+    --         goto continue
+    --     end
+    -- end
 
     v.set = "Cine"
     v.atlas = "Cine"
@@ -834,5 +834,5 @@ for _, v in pairs(Reverie.cines) do
 
     SMODS.Consumable(v)
 
-    :: continue ::
+    -- :: continue ::
 end
