@@ -522,6 +522,12 @@ function Reverie.create_special_joker(area)
 end
 
 function Reverie.create_poker_face_card(area)
+    area = area or {
+        T = {
+            x = G.ROOM.T.x + 9 + G.hand.T.x,
+            y = G.hand.T.y
+        }
+    }
     local target = pseudorandom_element(G.deck.cards, pseudoseed("pokerface"))
     local c = Card(area.T.x + area.T.w / 2, area.T.y, G.CARD_W, G.CARD_H, G.P_CARDS.empty, G.P_CENTERS.c_base)
 
