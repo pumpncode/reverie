@@ -359,7 +359,7 @@ return {
                 text = {
                     "{C:cine}Exchange Coupons{} may appear",
                     "in the shop and has {C:green}#2# in #3#",
-                    "chance for being {C:dark_edition}Negative"
+                    "chance of being {C:dark_edition}Negative"
                 }
             },
             sleeve_dvrprv_stamp = {
