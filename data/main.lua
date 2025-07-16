@@ -467,7 +467,7 @@ function Reverie.create_special_joker(area)
             local available = Reverie.get_food_jokers()
 
             for i, key in ipairs(available) do
-                if (G.GAME.used_jokers[key] and not next(find_joker("Showman"))) then
+                if (G.GAME.used_jokers[key] and not next(find_joker("Showman"))) or (G.P_CENTERS[key].in_pool and not G.P_CENTERS[key]:in_pool()) then
                     available[i] = nil
                 end
             end
@@ -613,6 +613,7 @@ function Reverie.is_food_joker(key)
             return true
         end
     end
+return false
 end
 
 function Reverie.double_ability(origin, new)
