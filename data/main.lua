@@ -537,6 +537,7 @@ end
 function Reverie.get_food_jokers()
     local result = {}
     local foods = {
+-- Vanilla
         G.GAME.pool_flags.gros_michel_extinct and "j_cavendish" or "j_gros_michel",
         "j_ice_cream",
         "j_turtle_bean",
@@ -545,62 +546,98 @@ function Reverie.get_food_jokers()
         "j_ramen",
         "j_selzer",
         "j_egg",
-        "j_mf_lollipop",
-        "j_mf_goldencarrot",
-        "j_mf_tonersoup",
-        "j_mf_teacup",
+
+        -- More Fluff (now checked automatically)
+        -- "j_mf_lollipop",
+-- "j_mf_goldencarrot",
+-- "j_mf_tonersoup",
+-- "j_mf_teacup",
+
+
         "j_cafeg",
         "j_cherry",
+
+        -- Ortalab
         G.GAME.pool_flags.taliaferro_extinct and "j_ortalab_royal_gala" or "j_ortalab_taliaferro",
         "j_ortalab_fine_wine",
         "j_ortalab_mystery_soda",
         "j_ortalab_popcorn_bag",
-        "j_cry_pickle",
-        "j_cry_chili_pepper",
-        "j_cry_oldcandy",
-        "j_cry_caramel",
-        "j_cry_foodm",
-        "j_cry_crustulum",
+
+        -- Cryptid (now checked automatically)
+        -- "j_cry_pickle",
+-- "j_cry_chili_pepper",
+-- "j_cry_oldcandy",
+-- "j_cry_caramel",
+-- "j_cry_foodm",
+-- "j_cry_crustulum",
+
         "j_evo_full_sugar_cola",
-        "j_kcva_fortunecookie",
-        "j_kcva_swiss",
+
+        -- KCVanilla
+        "j_kcvanilla_fortunecookie",
+        "j_kcvanilla_swiss",
+
+        -- SDM_0's Stuff
         "j_sdm_burger",
         "j_sdm_pizza",
+
         "j_snow_turkey_dinner",
+
         "j_ssj_coffee",
+
         "j_jank_cut_the_cheese",
-        G.GAME.pool_flags.soft_taco_can_spawn and "j_paperback_soft_taco" or "j_paperback_crispy_taco",
-        "j_paperback_nachos",
-        "j_paperback_complete_breakfast",
-        "j_paperback_ghost_cola",
-        "j_paperback_joker_cookie",
-        "j_paperback_cakepop",
-        "j_paperback_caramel_apple",
-        "j_paperback_charred_marshmallow",
-        "j_paperback_dreamsicle",
-        "j_paperback_apple",
-        "j_paperback_coffee",
-        "j_paperback_cream_liqueur",
-        "j_paperback_epic_sauce",
-        "j_paperback_champagne",
-        "j_twewy_candleService",
-        "j_twewy_burningCherry",
-        "j_twewy_burningMelon",
+
+        -- Paperback (now checked automatically)
+        -- G.GAME.pool_flags.soft_taco_can_spawn and "j_paperback_soft_taco" or "j_paperback_crispy_taco",
+-- "j_paperback_nachos",
+-- "j_paperback_complete_breakfast",
+-- "j_paperback_ghost_cola",
+-- "j_paperback_joker_cookie",
+-- "j_paperback_cakepop",
+-- "j_paperback_caramel_apple",
+-- "j_paperback_charred_marshmallow",
+-- "j_paperback_dreamsicle",
+-- "j_paperback_apple",
+-- "j_paperback_coffee",
+-- "j_paperback_cream_liqueur",
+-- "j_paperback_epic_sauce",
+-- "j_paperback_champagne",
+
+        -- "j_twewy_candleService",
+-- "j_twewy_burningCherry",
+-- "j_twewy_burningMelon",
+
+        -- Cosmos
         "j_cosmos_milkandcookies",
-        "j_kcvanilla_fortunecookie",
+        
+        -- Neato Jokers
         "j_neat_frostedprimerib",
-        G.GAME.pool_flags.gfondue_licked and "j_buf_camarosa" or "j_buf_gfondue"
+
+        G.GAME.pool_flags.gfondue_licked and "j_buf_camarosa" or "j_buf_gfondue",
+
+        -- Bunco exotic suit jokers (now checked automatically)
+        -- "j_bunc_starfruit",
+        -- "j_bunc_fondue"
     }
 
-    -- Bunco exotic suit jokers
-    if G.GAME and G.GAME.Exotic then
-        table.insert(foods, "j_bunc_starfruit")
-        table.insert(foods, "j_bunc_fondue")
-    end
+-- -- Bunco exotic suit jokers
+-- if G.GAME and G.GAME.Exotic then
+--     table.insert(foods, "j_bunc_starfruit")
+--     table.insert(foods, "j_bunc_fondue")
+-- end
 
-    for _, v in pairs(foods) do
+    for _, v in ipairs(foods) do
         if G.P_CENTERS[v] then
             result[#result + 1] = v
+        end
+    end
+
+    for _, v in ipairs(G.P_CENTER_POOLS.Joker) do
+        -- Some checks for mods that label food jokers
+        if v.pools and v.pools.Food then
+            result[#result + 1] = v.key
+        elseif v.config and (v.config.Food or (type(v.config.extra) == "table" and v.config.extra.Food)) then
+            result[#result + 1] = v.key
         end
     end
 
