@@ -1592,7 +1592,7 @@ end
 
 Card.check_use_reverie_ref = Card.check_use
 function Card:check_use()
-    if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.name == "Pack" then
+    if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1" then
         return nil
     end
 
@@ -1634,7 +1634,7 @@ local use_and_sell_buttons_ref = G.UIDEF.use_and_sell_buttons
 function G.UIDEF.use_and_sell_buttons(card)
     local result = use_and_sell_buttons_ref(card)
 
-    if (Reverie.is_cine_or_reverie(card) or Reverie.find_used_cine("Crazy Lucky")) and card.ability.consumeable and card.area and card.area == G.pack_cards then
+    if (Reverie.is_cine_or_reverie(card) or (G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1")) and card.ability.consumeable and card.area and card.area == G.pack_cards then
         return {
             n = G.UIT.ROOT,
             config = { padding = 0, colour = G.C.CLEAR },
@@ -1658,7 +1658,7 @@ function G.UIDEF.card_focus_ui(card)
     local base_attach = base_background:get_UIE_by_ID("ATTACH_TO_ME")
     local card_width = card.T.w + (card.ability.consumeable and -0.1 or card.ability.set == "Voucher" and -0.16 or 0)
 
-    if Reverie.find_used_cine("Crazy Lucky") and card.area == G.pack_cards and G.pack_cards then
+    if card.area == G.pack_cards and G.pack_cards and G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1" then
         base_attach.children.use = G.UIDEF.card_focus_button {
             card = card, parent = base_attach, type = "select",
             func = "can_select_crazy_card", button = "use_card", card_width = card_width
@@ -2196,7 +2196,7 @@ end
 
 function Reverie.is_in_reverie_pack()
     for _, v in ipairs(Reverie.boosters) do
-        if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and v.name == SMODS.OPENED_BOOSTER.config.center.name then
+        if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and v.key == SMODS.OPENED_BOOSTER.config.center.key then
             return true
         end
     end
