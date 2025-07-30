@@ -282,8 +282,8 @@ pattern = '''elseif self.ability.set == 'Joker' then'''
 position = "before"
 payload = '''
     if self.ability.consumeable and self.area == G.cine_quests then
-        G.consumeables.config.card_limit = G.consumeables.config.card_limit - v
-        G.cine_quests.config.card_limit = G.cine_quests.config.card_limit + v
+        G.consumeables.config.card_limit = G.consumeables.config.card_limit - self.edition.card_limit
+        G.cine_quests.config.card_limit = G.cine_quests.config.card_limit + self.edition.card_limit
     end
 '''
 match_indent = true
