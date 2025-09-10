@@ -313,7 +313,7 @@ function Reverie.create_tag_as_card(area, big)
     if Reverie.find_mod("ortalab") and card.ability.name == "tag_ortalab_constellation" then
         local _poker_hands = {}
         for k, _ in pairs(G.ZODIACS) do
-            _poker_hands[#_poker_hands+1] = k
+            _poker_hands[#_poker_hands + 1] = k
         end
 
         local zodiac1 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
@@ -322,7 +322,7 @@ function Reverie.create_tag_as_card(area, big)
             zodiac2 = pseudorandom_element(_poker_hands, pseudoseed('constellation_patch'))
         end
 
-        card.ability.zodiac_hands = {zodiac1, zodiac2}
+        card.ability.zodiac_hands = { zodiac1, zodiac2 }
         card.ability.tag.ability.zodiac_hands = card.ability.zodiac_hands
     end
 
@@ -467,7 +467,7 @@ function Reverie.create_special_joker(area)
             local available = Reverie.get_food_jokers()
 
             for i, key in ipairs(available) do
-                if (G.GAME.used_jokers[key] and not next(find_joker("Showman"))) then
+                if (G.GAME.used_jokers[key] and not next(find_joker("Showman"))) or (G.P_CENTERS[key].in_pool and not G.P_CENTERS[key]:in_pool()) then
                     available[i] = nil
                 end
             end
@@ -537,6 +537,7 @@ end
 function Reverie.get_food_jokers()
     local result = {}
     local foods = {
+        -- Vanilla
         G.GAME.pool_flags.gros_michel_extinct and "j_cavendish" or "j_gros_michel",
         "j_ice_cream",
         "j_turtle_bean",
@@ -545,62 +546,98 @@ function Reverie.get_food_jokers()
         "j_ramen",
         "j_selzer",
         "j_egg",
-        "j_mf_lollipop",
-        "j_mf_goldencarrot",
-        "j_mf_tonersoup",
-        "j_mf_teacup",
+
+        -- More Fluff (now checked automatically)
+        -- "j_mf_lollipop",
+        -- "j_mf_goldencarrot",
+        -- "j_mf_tonersoup",
+        -- "j_mf_teacup",
+
+
         "j_cafeg",
         "j_cherry",
+
+        -- Ortalab
         G.GAME.pool_flags.taliaferro_extinct and "j_ortalab_royal_gala" or "j_ortalab_taliaferro",
         "j_ortalab_fine_wine",
         "j_ortalab_mystery_soda",
         "j_ortalab_popcorn_bag",
-        "j_cry_pickle",
-        "j_cry_chili_pepper",
-        "j_cry_oldcandy",
-        "j_cry_caramel",
-        "j_cry_foodm",
-        "j_cry_crustulum",
+
+        -- Cryptid (now checked automatically)
+        -- "j_cry_pickle",
+        -- "j_cry_chili_pepper",
+        -- "j_cry_oldcandy",
+        -- "j_cry_caramel",
+        -- "j_cry_foodm",
+        -- "j_cry_crustulum",
+
         "j_evo_full_sugar_cola",
-        "j_kcva_fortunecookie",
-        "j_kcva_swiss",
+
+        -- KCVanilla
+        "j_kcvanilla_fortunecookie",
+        "j_kcvanilla_swiss",
+
+        -- SDM_0's Stuff
         "j_sdm_burger",
         "j_sdm_pizza",
+
         "j_snow_turkey_dinner",
+
         "j_ssj_coffee",
+
         "j_jank_cut_the_cheese",
-        G.GAME.pool_flags.soft_taco_can_spawn and "j_paperback_soft_taco" or "j_paperback_crispy_taco",
-        "j_paperback_nachos",
-        "j_paperback_complete_breakfast",
-        "j_paperback_ghost_cola",
-        "j_paperback_joker_cookie",
-        "j_paperback_cakepop",
-        "j_paperback_caramel_apple",
-        "j_paperback_charred_marshmallow",
-        "j_paperback_dreamsicle",
-        "j_paperback_apple",
-        "j_paperback_coffee",
-        "j_paperback_cream_liqueur",
-        "j_paperback_epic_sauce",
-        "j_paperback_champagne",
-        "j_twewy_candleService",
-        "j_twewy_burningCherry",
-        "j_twewy_burningMelon",
+
+        -- Paperback (now checked automatically)
+        -- G.GAME.pool_flags.soft_taco_can_spawn and "j_paperback_soft_taco" or "j_paperback_crispy_taco",
+        -- "j_paperback_nachos",
+        -- "j_paperback_complete_breakfast",
+        -- "j_paperback_ghost_cola",
+        -- "j_paperback_joker_cookie",
+        -- "j_paperback_cakepop",
+        -- "j_paperback_caramel_apple",
+        -- "j_paperback_charred_marshmallow",
+        -- "j_paperback_dreamsicle",
+        -- "j_paperback_apple",
+        -- "j_paperback_coffee",
+        -- "j_paperback_cream_liqueur",
+        -- "j_paperback_epic_sauce",
+        -- "j_paperback_champagne",
+
+        -- "j_twewy_candleService",
+        -- "j_twewy_burningCherry",
+        -- "j_twewy_burningMelon",
+
+        -- Cosmos
         "j_cosmos_milkandcookies",
-        "j_kcvanilla_fortunecookie",
+
+        -- Neato Jokers
         "j_neat_frostedprimerib",
-        G.GAME.pool_flags.gfondue_licked and "j_buf_camarosa" or "j_buf_gfondue"
+
+        G.GAME.pool_flags.gfondue_licked and "j_buf_camarosa" or "j_buf_gfondue",
+
+        -- Bunco exotic suit jokers (now checked automatically)
+        -- "j_bunc_starfruit",
+        -- "j_bunc_fondue"
     }
 
-    -- Bunco exotic suit jokers
-    if G.GAME and G.GAME.Exotic then
-        table.insert(foods, "j_bunc_starfruit")
-        table.insert(foods, "j_bunc_fondue")
-    end
+    -- -- Bunco exotic suit jokers
+    -- if G.GAME and G.GAME.Exotic then
+    --     table.insert(foods, "j_bunc_starfruit")
+    --     table.insert(foods, "j_bunc_fondue")
+    -- end
 
-    for _, v in pairs(foods) do
+    for _, v in ipairs(foods) do
         if G.P_CENTERS[v] then
             result[#result + 1] = v
+        end
+    end
+
+    for _, v in ipairs(G.P_CENTER_POOLS.Joker) do
+        -- Some checks for mods that label food jokers
+        if v.pools and v.pools.Food then
+            result[#result + 1] = v.key
+        elseif v.config and (v.config.Food or (type(v.config.extra) == "table" and v.config.extra.Food)) then
+            result[#result + 1] = v.key
         end
     end
 
@@ -613,6 +650,7 @@ function Reverie.is_food_joker(key)
             return true
         end
     end
+    return false
 end
 
 function Reverie.double_ability(origin, new)
@@ -852,7 +890,8 @@ function Reverie.create_card_for_cine_shop(area)
         not crazy_pack_available
     local tag_available = Reverie.find_used_cine("Tag or Die") and not crazy_pack_available
     local oddity_available = has_oddity and (not is_forcing_card_set and not crazy_pack_available)
-    local alchemical_available = has_alchemical and ((Reverie.find_used_cine_or("Fool Metal Alchemist") or not is_forcing_card_set) and not crazy_pack_available)
+    local alchemical_available = has_alchemical and
+    ((Reverie.find_used_cine_or("Fool Metal Alchemist") or not is_forcing_card_set) and not crazy_pack_available)
     local colour_available = has_colour and (Reverie.find_used_cine("Every Hue") and not crazy_pack_available)
 
     local joker_rate = G.GAME.joker_rate
@@ -863,8 +902,11 @@ function Reverie.create_card_for_cine_shop(area)
     local spectral_rate = Reverie.find_used_cine("Eerie Inn") and joker_rate or G.GAME.spectral_rate or 0
 
     -- modded rates
-    local oddity_rate = has_oddity and ((G.GAME.oddity_rate or 0) > 0 and G.GAME.oddity_rate or G.GAME.cached_oddity_rate) or 0
-    local alchemical_rate = has_alchemical and (Reverie.find_used_cine_or("Fool Metal Alchemist") and joker_rate or G.GAME.alchemical_rate or G.GAME.cached_alchemical_rate) or 0
+    local oddity_rate = has_oddity and
+    ((G.GAME.oddity_rate or 0) > 0 and G.GAME.oddity_rate or G.GAME.cached_oddity_rate) or 0
+    local alchemical_rate = has_alchemical and
+    (Reverie.find_used_cine_or("Fool Metal Alchemist") and joker_rate or G.GAME.alchemical_rate or G.GAME.cached_alchemical_rate) or
+    0
     local colour_rate = has_colour and (Reverie.find_used_cine("Every Hue") and joker_rate) or 0
 
     local total_rate = (joker_available and joker_rate or 0)
@@ -884,36 +926,38 @@ function Reverie.create_card_for_cine_shop(area)
 
         playing_card_rate = Reverie.find_used_cine("Poker Face") and joker_rate or G.GAME.playing_card_rate or 0
         spectral_rate = Reverie.find_used_cine("Eerie Inn") and joker_rate or G.GAME.spectral_rate or 0
-        alchemical_rate = has_alchemical and (Reverie.find_used_cine_or("Fool Metal Alchemist") and joker_rate or G.GAME.alchemical_rate or G.GAME.cached_alchemical_rate) or 0
+        alchemical_rate = has_alchemical and
+        (Reverie.find_used_cine_or("Fool Metal Alchemist") and joker_rate or G.GAME.alchemical_rate or G.GAME.cached_alchemical_rate) or
+        0
         colour_rate = has_colour and (Reverie.find_used_cine("Every Hue") and joker_rate) or 0
         total_rate = (joker_available and joker_rate or 0)
-                   + (planet_or_tarot_available and (tarot_rate + planet_rate) or 0)
-                   + (playing_available and playing_card_rate or 0)
-                   + (spectral_available and spectral_rate or 0)
-                   + (tag_available and joker_rate or 0)
-                   + (crazy_pack_available and joker_rate or 0)
-                   + (oddity_available and oddity_rate or 0)
-                   + (alchemical_available and alchemical_rate or 0)
-                   + (colour_available and colour_rate or 0)
+            + (planet_or_tarot_available and (tarot_rate + planet_rate) or 0)
+            + (playing_available and playing_card_rate or 0)
+            + (spectral_available and spectral_rate or 0)
+            + (tag_available and joker_rate or 0)
+            + (crazy_pack_available and joker_rate or 0)
+            + (oddity_available and oddity_rate or 0)
+            + (alchemical_available and alchemical_rate or 0)
+            + (colour_available and colour_rate or 0)
     end
 
     local candidates = {
-            { type = "Joker",  val = joker_available and joker_rate or 0,            available = joker_available },
-            { type = "Tarot",  val = planet_or_tarot_available and tarot_rate or 0,  available = planet_or_tarot_available },
-            { type = "Planet", val = planet_or_tarot_available and planet_rate or 0, available = planet_or_tarot_available },
-            {
-                type = (G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed("illusion")) > 0.6) and "Enhanced" or
-                    "Base",
-                val = playing_available and playing_card_rate or 0,
-                available = playing_available
-            },
-            { type = "Spectral", val = spectral_available and spectral_rate or 0,       available = spectral_available },
-            { type = "Tag",      val = tag_available and joker_rate or 0,               available = tag_available },
-            { type = "Crazy",    val = crazy_pack_available and joker_rate or 0,        available = crazy_pack_available },
-            -- Modded candidates
-            { type = "Oddity", val = oddity_available and oddity_rate or 0,             available = oddity_available },
-            { type = "Alchemical", val = alchemical_available and alchemical_rate or 0, available = alchemical_available },
-            { type = "Colour", val = colour_available and colour_rate or 0,             available = colour_available }
+        { type = "Joker",  val = joker_available and joker_rate or 0,            available = joker_available },
+        { type = "Tarot",  val = planet_or_tarot_available and tarot_rate or 0,  available = planet_or_tarot_available },
+        { type = "Planet", val = planet_or_tarot_available and planet_rate or 0, available = planet_or_tarot_available },
+        {
+            type = (G.GAME.used_vouchers["v_illusion"] and pseudorandom(pseudoseed("illusion")) > 0.6) and "Enhanced" or
+                "Base",
+            val = playing_available and playing_card_rate or 0,
+            available = playing_available
+        },
+        { type = "Spectral",   val = spectral_available and spectral_rate or 0,     available = spectral_available },
+        { type = "Tag",        val = tag_available and joker_rate or 0,             available = tag_available },
+        { type = "Crazy",      val = crazy_pack_available and joker_rate or 0,      available = crazy_pack_available },
+        -- Modded candidates
+        { type = "Oddity",     val = oddity_available and oddity_rate or 0,         available = oddity_available },
+        { type = "Alchemical", val = alchemical_available and alchemical_rate or 0, available = alchemical_available },
+        { type = "Colour",     val = colour_available and colour_rate or 0,         available = colour_available }
     }
 
     local polled_rate = pseudorandom(pseudoseed("cdt" .. G.GAME.round_resets.ante)) * total_rate
@@ -1079,7 +1123,7 @@ function CardArea:emplace(card, location, stay_flipped)
 
         for _, v in ipairs(G.GAME.current_round.used_cine or {}) do
             local center = Reverie.find_cine_center(v)
-    
+
             if center and type(center.config.extra) == "table" and center.config.extra.set_price then
                 card.cost = center.config.extra.set_price
                 card.sell_cost = math.max(1, math.floor(card.cost / 2)) + (card.ability.extra_value or 0)
@@ -1259,7 +1303,6 @@ function Reverie.use_cine(center, card, area, copier)
         trigger = 'after',
         delay = 0.4,
         func = function()
-
             card.no_shadow = true
             card.reverie_custom_shadow = true
             torn_strip = copy_card(card)
@@ -1534,13 +1577,13 @@ Game.update_shop_reverie_ref = Game.update_shop
 function Game:update_shop(dt)
     self:update_shop_reverie_ref(dt)
 
-    if G.STATE_COMPLETE then
-        for _, v in ipairs(G.GAME.tags) do
-            v:apply_to_run({
-                type = "immediate"
-            })
-        end
-    end
+    -- if G.STATE_COMPLETE then
+    --     for _, v in ipairs(G.GAME.tags) do
+    --         v:apply_to_run({
+    --             type = "immediate"
+    --         })
+    --     end
+    -- end
 
     if Reverie.find_used_cine("Reverie") and not G.booster_pack_meteors then
         ease_background_colour_blind(G.STATES.SPECTRAL_PACK)
@@ -1592,7 +1635,7 @@ end
 
 Card.check_use_reverie_ref = Card.check_use
 function Card:check_use()
-    if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.name == "Pack" then
+    if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1" then
         return nil
     end
 
@@ -1634,7 +1677,7 @@ local use_and_sell_buttons_ref = G.UIDEF.use_and_sell_buttons
 function G.UIDEF.use_and_sell_buttons(card)
     local result = use_and_sell_buttons_ref(card)
 
-    if (Reverie.is_cine_or_reverie(card) or Reverie.find_used_cine("Crazy Lucky")) and card.ability.consumeable and card.area and card.area == G.pack_cards then
+    if (Reverie.is_cine_or_reverie(card) or (G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1")) and card.ability.consumeable and card.area and card.area == G.pack_cards then
         return {
             n = G.UIT.ROOT,
             config = { padding = 0, colour = G.C.CLEAR },
@@ -1658,7 +1701,7 @@ function G.UIDEF.card_focus_ui(card)
     local base_attach = base_background:get_UIE_by_ID("ATTACH_TO_ME")
     local card_width = card.T.w + (card.ability.consumeable and -0.1 or card.ability.set == "Voucher" and -0.16 or 0)
 
-    if Reverie.find_used_cine("Crazy Lucky") and card.area == G.pack_cards and G.pack_cards then
+    if card.area == G.pack_cards and G.pack_cards and G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1" then
         base_attach.children.use = G.UIDEF.card_focus_button {
             card = card, parent = base_attach, type = "select",
             func = "can_select_crazy_card", button = "use_card", card_width = card_width
@@ -1921,7 +1964,7 @@ function Reverie.complete_cine_quest(card)
     }))
     G.E_MANAGER:add_event(Event({
         func = function()
-            if Reverie.find_mod("JokerDisplay") and _G["JokerDisplay"] and Reverie.config.jokerdisplay_compat then
+            if Reverie.find_mod("JokerDisplay") and JokerDisplay.config.enabled and _G["JokerDisplay"] and Reverie.config.jokerdisplay_compat then
                 if card.flipping then return end -- Safety check
                 card.joker_display_values.disabled = true
             end
@@ -2165,14 +2208,14 @@ function Card:load(cardTable, other_card)
     Reverie.set_card_back(self)
 end
 
-local generate_UIBox_ability_table_ref = Card.generate_UIBox_ability_table
-function Card:generate_UIBox_ability_table()
+local generate_UIBox_ability_table_reverie_ref = Card.generate_UIBox_ability_table
+function Card:generate_UIBox_ability_table(vars_only)
     if self.ability.set == "Tag" then
         self.ability.tag:generate_UI()
-        return self.ability.tag:get_uibox_table().ability_UIBox_table
+        return self.ability.tag:get_uibox_table(vars_only).ability_UIBox_table
     end
 
-    return generate_UIBox_ability_table_ref(self)
+    return generate_UIBox_ability_table_reverie_ref(self, vars_only)
 end
 
 local cash_out_ref = G.FUNCS.cash_out
@@ -2196,7 +2239,7 @@ end
 
 function Reverie.is_in_reverie_pack()
     for _, v in ipairs(Reverie.boosters) do
-        if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and v.name == SMODS.OPENED_BOOSTER.config.center.name then
+        if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and v.key == SMODS.OPENED_BOOSTER.config.center.key then
             return true
         end
     end
@@ -2215,12 +2258,13 @@ function G.FUNCS.check_for_buy_space(card)
 end
 
 function Reverie.find_mod(id)
-    for _, mod in ipairs(SMODS.find_mod(id)) do
-        if mod.can_load then
-            return true
-        end
-    end
-    return false
+    return next(SMODS.find_mod(id))
+    -- for _, mod in ipairs(SMODS.find_mod(id)) do
+    --     if mod.can_load then
+    --         return true
+    --     end
+    -- end
+    -- return false
 end
 
 if Reverie.find_mod("cartomancer") and Cartomancer then
