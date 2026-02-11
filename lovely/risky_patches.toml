@@ -9,14 +9,13 @@ priority = 101
 # Tag:get_uibox_table
 # Make skip tag show correctly in the shop (by default it adds one to the tag, now it won't do so if in shop/pack)
 [[patches]]
-[patches.pattern]
+[patches.regex]
 target = "tag.lua"
-pattern = '''elseif name_to_check == 'Skip Tag' then*'''
+pattern = '''elseif name_to_check == 'Skip Tag' then loc_vars = \{self\.config\.skip_bonus, self\.config\.skip_bonus\*\(\(G\.GAME\.skips or 0\)\+(.*?)\)\}'''
 position = "at"
 payload = '''
-elseif name_to_check == 'Skip Tag' then loc_vars = {self.config.skip_bonus, self.config.skip_bonus*((G.GAME.skips or 0)+(self.ability.as_card and 0 or 1))}
+elseif name_to_check == 'Skip Tag' then loc_vars = {self.config.skip_bonus, self.config.skip_bonus*((G.GAME.skips or 0)+(self.ability.as_card and 0 or $1))}
 '''
-match_indent = true
 
 
 
@@ -94,3 +93,21 @@ $pre
     $post
 '''
 times = 2
+
+# Lets boosters check selectable_from_pack even if not defined in booster
+# Identical patch in Redux Arcanum, only one will succeed with both mods enabled.
+# (I hope SMODS changes this implementation)
+[[patches]]
+[patches.regex]
+target = 'functions/button_callbacks.lua'
+pattern = "(?<indent>[\t ]*)(?<pre>.*?) and booster_obj\\.select_card and card:selectable_from_pack\\(booster_obj\\)(?<post>.*?)"
+position = "at"
+payload = '$pre and card:selectable_from_pack(booster_obj)$post'
+line_prepend = "$indent"
+[[patches]]
+[patches.regex]
+target = 'functions/UI_definitions.lua'
+pattern = "(?<indent>[\t ]*)(?<pre>.*?) and booster_obj\\.select_card and card:selectable_from_pack\\(booster_obj\\)(?<post>.*?)"
+position = "at"
+payload = '$pre and card:selectable_from_pack(booster_obj)$post'
+line_prepend = "$indent"

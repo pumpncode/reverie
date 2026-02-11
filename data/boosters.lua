@@ -33,7 +33,7 @@ local function ease_crazy_pack_colour(self)
 end
 
 local function create_film_pack_card(self, card)
-    return create_card(card.ability.name:find("Mega") and "Cine" or "Cine_Quest", G.pack_cards, nil, nil, true, true, nil, "film")
+    return create_card((card.ability.name and card.ability.name:find("Mega")) and "Cine" or "Cine_Quest", G.pack_cards, nil, nil, true, true, nil, "film")
 end
 
 local function ease_film_pack_colour(self)
@@ -70,7 +70,15 @@ Reverie.boosters = {
         },
         create_card = create_crazy_pack_card,
         ease_background_colour = ease_crazy_pack_colour,
-        sparkles = crazy_pack_sparkles
+        sparkles = crazy_pack_sparkles,
+        select_card = {
+            ["Joker"] = "jokers",
+            -- ["Default"] = "deck",
+            -- ["Enhanced"] = "deck",
+            ["Cine_Quest"] = "cine_quests",
+            ["Cine"] = "cine_quests",
+            ["Consumeables"] = "consumeables"
+        }
     },
     {
         key = "tag_normal_1",
@@ -175,7 +183,8 @@ Reverie.boosters = {
         },
         create_card = create_film_pack_card,
         ease_background_colour = ease_film_pack_colour,
-        meteors = film_pack_meteors
+        meteors = film_pack_meteors,
+        select_card = "cine_quests"
     },
     {
         key = "film_normal_2",
@@ -196,7 +205,8 @@ Reverie.boosters = {
         },
         create_card = create_film_pack_card,
         ease_background_colour = ease_film_pack_colour,
-        meteors = film_pack_meteors
+        meteors = film_pack_meteors,
+        select_card = "cine_quests"
     },
     {
         key = "film_jumbo_1",
@@ -217,7 +227,8 @@ Reverie.boosters = {
         },
         create_card = create_film_pack_card,
         ease_background_colour = ease_film_pack_colour,
-        meteors = film_pack_meteors
+        meteors = film_pack_meteors,
+        select_card = "cine_quests"
     },
     {
         key = "film_mega_1",
@@ -238,7 +249,8 @@ Reverie.boosters = {
         },
         create_card = create_film_pack_card,
         ease_background_colour = ease_film_pack_colour,
-        meteors = film_pack_meteors
+        meteors = film_pack_meteors,
+        select_card = "cine_quests"
     }
 }
 
@@ -251,25 +263,41 @@ for _, v in pairs(Reverie.boosters) do
     SMODS.Booster(v)
 end
 
+local orig_standard_pack_create_card = G.P_CENTERS['p_standard_normal_1'].create_card
 SMODS.Booster:take_ownership_by_kind('Standard', {
     create_card = function(self, card, i)
         if Reverie.find_used_cine("Poker Face") then
             card = Reverie.create_poker_face_card(G.pack_cards)
             return card
         else
-            local _edition = poll_edition('standard_edition'..G.GAME.round_resets.ante, 2, true)
-            local _seal = SMODS.poll_seal({mod = 10})
-            return {set = (pseudorandom(pseudoseed('stdset'..G.GAME.round_resets.ante)) > 0.6) and "Enhanced" or "Base", edition = _edition, seal = _seal, area = G.pack_cards, skip_materialize = true, soulable = true, key_append = "sta"}
+            return orig_standard_pack_create_card(self, card, i)
         end
     end,
 }, true)
 
+local orig_buffoon_pack_create_card = G.P_CENTERS['p_buffoon_normal_1'].create_card
 SMODS.Booster:take_ownership_by_kind('Buffoon', {
     create_card = function(self, card)
         special_reverie_joker = Reverie.create_special_joker(G.pack_cards)
         if special_reverie_joker then
             return special_reverie_joker
+        else
+            return orig_buffoon_pack_create_card(self, card)
         end
-        return {set = "Joker", area = G.pack_cards, skip_materialize = true, soulable = true, key_append = "buf"}
     end,
 }, true)
+
+-- To handle Reverie spectral specifically, but also cine cards appearing in other packs.
+local orig_smods_selectable_from_pack = Card.selectable_from_pack
+function Card.selectable_from_pack(card, pack)
+    if card.ability.set == "Cine" or card.config.center.soul_set == "Cine" then
+        return "cine_quests"
+    end
+    return orig_smods_selectable_from_pack(card, pack)
+end
+
+-- SMODS.Booster:take_ownership_by_kind('Spectral', {
+--     select_card = {
+--         ["Cine"] = "cine_quests",
+--     }
+-- }, true)

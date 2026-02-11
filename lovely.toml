@@ -119,7 +119,7 @@ elseif c1.ability.set == "Tag" then
 
     play_sound("generic1", 0.9 + math.random() * 0.1, 0.8)
     play_sound("holo1", 1.2 + math.random() * 0.1, 0.4)
-    
+
     for i = 1, #G.GAME.tags do
         G.GAME.tags[i]:apply_to_run({type = 'immediate'})
     end
@@ -184,44 +184,55 @@ match_indent = true
 # '''
 # match_indent = true
 
-# G.FUNCS.use_card()
+# # G.FUNCS.use_card()
+# [[patches]]
+# [patches.pattern]
+# target = "functions/button_callbacks.lua"
+# pattern = '''elseif card.ability.set == 'Enhanced' or card.ability.set == 'Default'*'''
+# position = "before"
+# payload = '''
+# ::reverie_use_card_consumable_skip::'''
+# match_indent = true
+
+# # G.FUNCS.use_card()
+# [[patches]]
+# [patches.pattern]
+# target = "functions/button_callbacks.lua"
+# pattern = '''if card:check_use() then '''
+# position = "before"
+# payload = '''
+# local is_pack_card = card.area and card.area == G.pack_cards'''
+# match_indent = true
+
+# # G.FUNCS.use_card()
+# [[patches]]
+# [patches.pattern]
+# target = "functions/button_callbacks.lua"
+# pattern = '''*G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED*'''
+# position = "before"
+# payload = '''
+# local is_cine = Reverie.is_cine_or_reverie(card)
+# if is_pack_card and (Reverie.is_in_reverie_pack() or is_cine) then
+#     (is_cine and G.cine_quests or G.consumeables):emplace(card)
+#     card:add_to_deck()
+#     play_sound('card1', 0.8, 0.6)
+#     play_sound('generic1')
+#     dont_dissolve = true
+#     delay_fac = 0.2
+
+#     goto reverie_use_card_consumable_skip
+# end'''
+# match_indent = true
+
+# Lets crazy packs put consumables in consumable slot without specifying exact card set
 [[patches]]
 [patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''elseif card.ability.set == 'Enhanced' or card.ability.set == 'Default'*'''
-position = "before"
+target = '=[SMODS _ "src/utils.lua"]'
+pattern = "if type(pack.select_card) == 'table' then"
+position = "after"
 payload = '''
-::reverie_use_card_consumable_skip::'''
-match_indent = true
-
-# G.FUNCS.use_card()
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''if card:check_use() then '''
-position = "before"
-payload = '''
-local is_pack_card = card.area and card.area == G.pack_cards'''
-match_indent = true
-
-# G.FUNCS.use_card()
-[[patches]]
-[patches.pattern]
-target = "functions/button_callbacks.lua"
-pattern = '''*G.STATE == G.STATES.TAROT_PACK or G.STATE == G.STATES.PLANET_PACK or G.STATE == G.STATES.SPECTRAL_PACK or G.STATE == G.STATES.SMODS_BOOSTER_OPENED*'''
-position = "before"
-payload = '''
-local is_cine = Reverie.is_cine_or_reverie(card)
-if is_pack_card and (Reverie.is_in_reverie_pack() or is_cine) then
-    (is_cine and G.cine_quests or G.consumeables):emplace(card)
-    card:add_to_deck()
-    play_sound('card1', 0.8, 0.6)
-    play_sound('generic1')
-    dont_dissolve = true
-    delay_fac = 0.2
-
-    goto reverie_use_card_consumable_skip
-end'''
+    if not pack.select_card[card.ability.set] and pack.select_card.Consumeables and card.ability.consumeable then return pack.select_card.Consumeables end -- Reverie
+'''
 match_indent = true
 
 # card_eval_status_text()
