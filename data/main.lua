@@ -1633,105 +1633,105 @@ function G.FUNCS.toggle_shop(e)
     }))
 end
 
-Card.check_use_reverie_ref = Card.check_use
-function Card:check_use()
-    if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1" then
-        return nil
-    end
+-- Card.check_use_reverie_ref = Card.check_use
+-- function Card:check_use()
+--     if G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1" then
+--         return nil
+--     end
 
-    return self:check_use_reverie_ref()
-end
+--     return self:check_use_reverie_ref()
+-- end
 
-function G.FUNCS.can_select_crazy_card(e)
-    local is_cine = Reverie.is_cine_or_reverie(e.config.ref_table)
+-- function G.FUNCS.can_select_crazy_card(e)
+--     local is_cine = Reverie.is_cine_or_reverie(e.config.ref_table)
 
-    -- Copy pasted from G.FUNCS.check_for_buy_space
-    if e.config.ref_table.ability.set ~= "Voucher" and e.config.ref_table.ability.set ~= "Tag"
-        and e.config.ref_table.ability.set ~= "Enhanced" and e.config.ref_table.ability.set ~= "Default"
-        and not (e.config.ref_table.ability.set == "Joker" and #G.jokers.cards < G.jokers.config.card_limit +
-            ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0))
-        and not (e.config.ref_table.ability.consumeable and not is_cine and #G.consumeables.cards < G.consumeables.config.card_limit +
-            ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0))
-        and not (is_cine and #G.cine_quests.cards < G.cine_quests.config.card_limit +
-            ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0)) then
-        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
-        e.config.button = nil
-    else
-        e.config.colour = G.C.GREEN
-        e.config.button = "use_card"
-    end
-end
+--     -- Copy pasted from G.FUNCS.check_for_buy_space
+--     if e.config.ref_table.ability.set ~= "Voucher" and e.config.ref_table.ability.set ~= "Tag"
+--         and e.config.ref_table.ability.set ~= "Enhanced" and e.config.ref_table.ability.set ~= "Default"
+--         and not (e.config.ref_table.ability.set == "Joker" and #G.jokers.cards < G.jokers.config.card_limit +
+--             ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0))
+--         and not (e.config.ref_table.ability.consumeable and not is_cine and #G.consumeables.cards < G.consumeables.config.card_limit +
+--             ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0))
+--         and not (is_cine and #G.cine_quests.cards < G.cine_quests.config.card_limit +
+--             ((e.config.ref_table.edition and e.config.ref_table.edition.negative) and 1 or 0)) then
+--         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+--         e.config.button = nil
+--     else
+--         e.config.colour = G.C.GREEN
+--         e.config.button = "use_card"
+--     end
+-- end
 
-local can_select_card_ref = G.FUNCS.can_select_card
-function G.FUNCS.can_select_card(e)
-    can_select_card_ref(e)
+-- local can_select_card_ref = G.FUNCS.can_select_card
+-- function G.FUNCS.can_select_card(e)
+--     can_select_card_ref(e)
 
-    if Reverie.is_cine_or_reverie(e.config.ref_table) and not (e.config.ref_table.edition and e.config.ref_table.edition.negative)
-        and #G.cine_quests.cards >= G.cine_quests.config.card_limit then
-        e.config.colour = G.C.UI.BACKGROUND_INACTIVE
-        e.config.button = nil
-    end
-end
+--     if Reverie.is_cine_or_reverie(e.config.ref_table) and not (e.config.ref_table.edition and e.config.ref_table.edition.negative)
+--         and #G.cine_quests.cards >= G.cine_quests.config.card_limit then
+--         e.config.colour = G.C.UI.BACKGROUND_INACTIVE
+--         e.config.button = nil
+--     end
+-- end
 
-local use_and_sell_buttons_ref = G.UIDEF.use_and_sell_buttons
-function G.UIDEF.use_and_sell_buttons(card)
-    local result = use_and_sell_buttons_ref(card)
+-- local use_and_sell_buttons_ref = G.UIDEF.use_and_sell_buttons
+-- function G.UIDEF.use_and_sell_buttons(card)
+--     local result = use_and_sell_buttons_ref(card)
 
-    if (Reverie.is_cine_or_reverie(card) or (G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1")) and card.ability.consumeable and card.area and card.area == G.pack_cards then
-        return {
-            n = G.UIT.ROOT,
-            config = { padding = 0, colour = G.C.CLEAR },
-            nodes = {
-                {
-                    n = G.UIT.R,
-                    config = { ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5 * card.T.w - 0.15, maxw = 0.9 * card.T.w - 0.15, minh = 0.3 * card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_select_crazy_card' },
-                    nodes = {
-                        { n = G.UIT.T, config = { text = localize('b_select'), colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true } }
-                    }
-                } }
-        }
-    end
+--     if (Reverie.is_cine_or_reverie(card) or (G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1")) and card.ability.consumeable and card.area and card.area == G.pack_cards then
+--         return {
+--             n = G.UIT.ROOT,
+--             config = { padding = 0, colour = G.C.CLEAR },
+--             nodes = {
+--                 {
+--                     n = G.UIT.R,
+--                     config = { ref_table = card, r = 0.08, padding = 0.1, align = "bm", minw = 0.5 * card.T.w - 0.15, maxw = 0.9 * card.T.w - 0.15, minh = 0.3 * card.T.h, hover = true, shadow = true, colour = G.C.UI.BACKGROUND_INACTIVE, one_press = true, button = 'use_card', func = 'can_select_crazy_card' },
+--                     nodes = {
+--                         { n = G.UIT.T, config = { text = localize('b_select'), colour = G.C.UI.TEXT_LIGHT, scale = 0.45, shadow = true } }
+--                     }
+--                 } }
+--         }
+--     end
 
-    return result
-end
+--     return result
+-- end
 
-local card_focus_ui_ref = G.UIDEF.card_focus_ui
-function G.UIDEF.card_focus_ui(card)
-    local base_background = card_focus_ui_ref(card)
-    local base_attach = base_background:get_UIE_by_ID("ATTACH_TO_ME")
-    local card_width = card.T.w + (card.ability.consumeable and -0.1 or card.ability.set == "Voucher" and -0.16 or 0)
+-- local card_focus_ui_ref = G.UIDEF.card_focus_ui
+-- function G.UIDEF.card_focus_ui(card)
+--     local base_background = card_focus_ui_ref(card)
+--     local base_attach = base_background:get_UIE_by_ID("ATTACH_TO_ME")
+--     local card_width = card.T.w + (card.ability.consumeable and -0.1 or card.ability.set == "Voucher" and -0.16 or 0)
 
-    if card.area == G.pack_cards and G.pack_cards and G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1" then
-        base_attach.children.use = G.UIDEF.card_focus_button {
-            card = card, parent = base_attach, type = "select",
-            func = "can_select_crazy_card", button = "use_card", card_width = card_width
-        }
-    elseif card.ability.set == "Booster" and (card.area == G.shop_jokers or card.area == G.shop_vouchers) then
-        base_attach.children.buy = nil
-        base_attach.children.redeem = G.UIDEF.card_focus_button {
-            card = card, parent = base_attach, type = "buy",
-            func = "can_open", button = "open_booster", card_width = card_width * 0.85
-        }
-    elseif card.ability.set == "Cine" then
-        if card.area == G.pack_cards and G.pack_cards then
-            base_attach.children.use = G.UIDEF.card_focus_button {
-                card = card, parent = base_attach, type = "select",
-                func = "can_select_card", button = "use_card", card_width = card_width
-            }
-        elseif G.cine_quests and card.area == G.cine_quests and G.STATE ~= G.STATES.TUTORIAL then
-            base_attach.children.use = G.UIDEF.card_focus_button {
-                card = card, parent = base_attach, type = "use",
-                func = "can_use_consumeable", button = "use_card", card_width = card_width
-            }
-            base_attach.children.sell = G.UIDEF.card_focus_button {
-                card = card, parent = base_attach, type = "sell",
-                func = "can_sell_card", button = "sell_card", card_width = card_width
-            }
-        end
-    end
+--     if card.area == G.pack_cards and G.pack_cards and G.STATE == G.STATES.SMODS_BOOSTER_OPENED and SMODS.OPENED_BOOSTER.config.center.key == "p_dvrprv_crazy_lucky_1" then
+--         base_attach.children.use = G.UIDEF.card_focus_button {
+--             card = card, parent = base_attach, type = "select",
+--             func = "can_select_crazy_card", button = "use_card", card_width = card_width
+--         }
+--     elseif card.ability.set == "Booster" and (card.area == G.shop_jokers or card.area == G.shop_vouchers) then
+--         base_attach.children.buy = nil
+--         base_attach.children.redeem = G.UIDEF.card_focus_button {
+--             card = card, parent = base_attach, type = "buy",
+--             func = "can_open", button = "open_booster", card_width = card_width * 0.85
+--         }
+--     elseif card.ability.set == "Cine" then
+--         if card.area == G.pack_cards and G.pack_cards then
+--             base_attach.children.use = G.UIDEF.card_focus_button {
+--                 card = card, parent = base_attach, type = "select",
+--                 func = "can_select_card", button = "use_card", card_width = card_width
+--             }
+--         elseif G.cine_quests and card.area == G.cine_quests and G.STATE ~= G.STATES.TUTORIAL then
+--             base_attach.children.use = G.UIDEF.card_focus_button {
+--                 card = card, parent = base_attach, type = "use",
+--                 func = "can_use_consumeable", button = "use_card", card_width = card_width
+--             }
+--             base_attach.children.sell = G.UIDEF.card_focus_button {
+--                 card = card, parent = base_attach, type = "sell",
+--                 func = "can_sell_card", button = "sell_card", card_width = card_width
+--             }
+--         end
+--     end
 
-    return base_background
-end
+--     return base_background
+-- end
 
 Controller.is_node_focusable_reverie_ref = Controller.is_node_focusable
 function Controller:is_node_focusable(node)
@@ -2247,11 +2247,13 @@ end
 
 local check_for_buy_space_ref = G.FUNCS.check_for_buy_space
 function G.FUNCS.check_for_buy_space(card)
-    if Reverie.is_cine_or_reverie(card) and not (#G.cine_quests.cards < G.cine_quests.config.card_limit +
-            ((card.edition and card.edition.negative) and 1 or 0)) then
-        alert_no_space(card, G.cine_quests)
-
-        return false
+    if Reverie.is_cine_or_reverie(card) then
+        if not (#G.cine_quests.cards < G.cine_quests.config.card_limit + (card.edition and card.edition.card_limit or 0)) then
+            alert_no_space(card, G.cine_quests)
+            return false
+        else
+            return true
+        end
     end
 
     return check_for_buy_space_ref(card)
